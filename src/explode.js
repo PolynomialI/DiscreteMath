@@ -39,7 +39,7 @@ function textures() {
 
 // pieces: objects to fling (they are re-parented into the blast group, keeping their world pose).
 // floorY: the desk height.
-export function createExplosion(scene, pieces, floorY) {
+export function createExplosion(scene, pieces, floorY, { reduced = false } = {}) {
   textures();
   const blast = new THREE.Group();
   scene.add(blast);
@@ -69,7 +69,7 @@ export function createExplosion(scene, pieces, floorY) {
 
   // fireball
   const fire = [];
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < (reduced ? 7 : 18); i++) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: fireTex, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false }));
     s.position.set(rnd(-0.8, 0.8), rnd(-0.6, 0.8), rnd(-0.3, 0.9));
     s.userData = { v: s.position.clone().multiplyScalar(rnd(1.5, 3.5)), grow: rnd(3, 6), delay: rnd(0, 0.15), life: rnd(0.7, 1.3) };
@@ -79,7 +79,7 @@ export function createExplosion(scene, pieces, floorY) {
   }
   // smoke
   const smoke = [];
-  for (let i = 0; i < 16; i++) {
+  for (let i = 0; i < (reduced ? 5 : 16); i++) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0, color: 0x777777 }));
     s.position.set(rnd(-1, 1), rnd(-0.3, 1), rnd(-0.5, 0.8));
     s.userData = { v: new THREE.Vector3(rnd(-0.6, 0.6), rnd(0.5, 1.4), rnd(-0.3, 0.5)), grow: rnd(4, 7), delay: rnd(0.15, 0.5), life: rnd(2.5, 4), spin: rnd(-0.5, 0.5) };
@@ -88,7 +88,7 @@ export function createExplosion(scene, pieces, floorY) {
     smoke.push(s);
   }
   // sparks
-  const N = 260;
+  const N = reduced ? 70 : 260;
   const sparkGeo = new THREE.BufferGeometry();
   const pos = new Float32Array(N * 3), vel = [];
   for (let i = 0; i < N; i++) {

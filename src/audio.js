@@ -1,5 +1,10 @@
 // Procedural sound effects (Web Audio). No audio files.
-let ac = null, master = null, noiseBuf = null;
+let ac = null, master = null, noiseBuf = null, muted = false;
+
+export function setMuted(m) {
+  muted = m;
+  if (master) master.gain.value = m ? 0 : 0.55;
+}
 
 export function initAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
@@ -7,7 +12,7 @@ export function initAudio() {
   if (!AC) return;
   ac = new AC();
   master = ac.createGain();
-  master.gain.value = 0.55;
+  master.gain.value = muted ? 0 : 0.55;
   master.connect(ac.destination);
   noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
   const d = noiseBuf.getChannelData(0);

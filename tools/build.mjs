@@ -11,7 +11,7 @@ mkdirSync(tmp, { recursive: true });
 
 // Every character the game draws (ASCII + math symbols used on modules and screens).
 const GLYPHS = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('') +
-  '¬∧∨→↔∀∃∈∉∪∩−′∅∴★≡≠φ⊆⊂ℤℕ·…’‘“”×—–⟳◀▶✓';
+  '¬∧∨→↔∀∃∈∉∪∩−′∅∴★≡≠φ⊆⊂ℤℕ·…’‘“”×—–⟳◀▶✓⚙';
 
 const FONT_DIR = '/usr/share/fonts/truetype/dejavu/';
 const fonts = [

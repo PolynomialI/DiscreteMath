@@ -6,7 +6,7 @@ import { buildCase, buildDesk, bayCenter, PLATE_Z, DEPTH } from './bomb3d.js';
 import { VIEW_TYPES, TimerView, EmptyView } from './modules3d.js';
 import { createExplosion } from './explode.js';
 import { generateBomb, createLogic, MODES, settingsForMode, randomSeed, formatTime, RELEASE_DIGIT, WORD_FORMS } from './logic.js';
-import { initAudio, sfx } from './audio.js';
+import { initAudio, sfx, setMuted } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -79,6 +79,19 @@ const camPos = new THREE.Vector3(), camPosTarget = new THREE.Vector3();
 const camLook = new THREE.Vector3(), camLookTarget = new THREE.Vector3();
 let zoom = 1;
 let shake = 0;
+
+// ── Player settings (title-screen gear). Saved in this browser only. ──
+const prefs = { graphics: 'high', boom: 'full', sound: 'on', shake: 'on' };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem('logicbomb.settings') || '{}')); } catch { /* storage blocked */ }
+function applyPrefs() {
+  const low = prefs.graphics === 'low';
+  renderer.setPixelRatio(low ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  key.castShadow = !low;
+  setMuted(prefs.sound === 'off');
+  try { localStorage.setItem('logicbomb.settings', JSON.stringify(prefs)); } catch { /* storage blocked */ }
+}
+applyPrefs();
 let idleSpin = false;
 
 const sharedMats = () => new Set(Object.values(M));
@@ -274,7 +287,7 @@ function blowUp() {
       else pieces.push(part);
     }
   }
-  bomb.blast = createExplosion(scene, pieces, bomb.desk.children[0].position.y);
+  bomb.blast = createExplosion(scene, pieces, bomb.desk.children[0].position.y, { reduced: prefs.boom === 'reduced' });
 }
 
 // ───────────────────────── Input ─────────────────────────
@@ -400,6 +413,34 @@ function buildModeList() {
     box.appendChild(b);
   }
 }
+function buildSettings() {
+  const rows = [
+    ['graphics', 'Graphics', [['high', 'High'], ['low', 'Low']]],
+    ['boom', 'Explosion', [['full', 'Full'], ['reduced', 'Reduced']]],
+    ['sound', 'Sound', [['on', 'On'], ['off', 'Off']]],
+    ['shake', 'Screen shake', [['on', 'On'], ['off', 'Off']]],
+  ];
+  const box = $('settingsList');
+  for (const [k, label, opts] of rows) {
+    const row = document.createElement('div');
+    row.className = 'setrow';
+    row.innerHTML = `<span>${label}</span><div class="seg"></div>`;
+    for (const [v, text] of opts) {
+      const b = document.createElement('button');
+      b.textContent = text;
+      b.className = prefs[k] === v ? 'on' : '';
+      b.addEventListener('click', () => {
+        prefs[k] = v;
+        row.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+        applyPrefs();
+      });
+      row.querySelector('.seg').appendChild(b);
+    }
+    box.appendChild(row);
+  }
+  $('gear').addEventListener('click', () => $('title').classList.add('settings'));
+  $('closeSettings').addEventListener('click', () => $('title').classList.remove('settings'));
+}
 $('retry').addEventListener('click', () => startGame(game.seed, game.mode));
 $('newBomb').addEventListener('click', () => startGame(randomSeed(), game.mode));
 $('toMenu').addEventListener('click', () => showMenuBomb());
@@ -434,6 +475,7 @@ function frame() {
   camPos.lerp(camPosTarget, 1 - Math.exp(-dt * 6));
   camLook.lerp(camLookTarget, 1 - Math.exp(-dt * 6));
   camera.position.copy(camPos);
+  if (prefs.shake === 'off') shake = 0;
   if (shake > 0) {
     camera.position.x += (Math.random() - 0.5) * 0.05 * shake;
     camera.position.y += (Math.random() - 0.5) * 0.05 * shake;
@@ -526,6 +568,7 @@ async function boot() {
   initKit();
   scene.background = TX.backdrop();
   buildModeList();
+  buildSettings();
   showMenuBomb();
   $('loading').classList.add('gone');
   requestAnimationFrame(frame);

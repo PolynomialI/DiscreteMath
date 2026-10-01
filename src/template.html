@@ -34,6 +34,18 @@ button { font-family: var(--sans); }
 .logo { font-family: var(--mono); font-weight: bold; font-size: 38px; letter-spacing: .08em; line-height: 1; margin-bottom: 18px; }
 .logo span { color: var(--amber); }
 #modes { display: grid; gap: 8px; }
+.cardTop { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.cardTop .logo { margin-bottom: 0; }
+.iconBtn { flex: none; width: 38px; height: 38px; border-radius: 9px; border: 1px solid #2a323b; background: #0d1116; color: var(--dim); font-size: 20px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.iconBtn:hover { color: var(--amber); border-color: var(--amber); }
+#settingsPanel { display: none; }
+#title.settings #settingsPanel { display: block; }
+#title.settings #modes, #title.settings .card > .cardTop { display: none; }
+.stitle { font-family: var(--mono); font-weight: bold; font-size: 20px; letter-spacing: .14em; }
+.setrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.seg { display: flex; border: 1px solid #2a323b; border-radius: 8px; overflow: hidden; }
+.seg button { background: #0d1116; color: var(--dim); border: 0; padding: 7px 12px; font-size: 13px; cursor: pointer; font-family: var(--sans); }
+.seg button.on { background: var(--amber); color: #1a1205; font-weight: bold; }
 .mode {
   display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; text-align: left; cursor: pointer;
   background: #0d1116; color: var(--ink); border: 1px solid #2a323b; border-radius: 10px; padding: 11px 14px;
@@ -89,8 +101,15 @@ body.playing #hud { display: flex; }
 
 <div id="title" class="screen">
   <div class="card">
-    <div class="logo">LOGIC <span>BOMB</span></div>
+    <div class="cardTop">
+      <button id="gear" class="iconBtn" title="Settings" aria-label="Settings">⚙</button>
+      <div class="logo">LOGIC <span>BOMB</span></div>
+    </div>
     <div id="modes"></div>
+    <div id="settingsPanel">
+      <div class="cardTop"><button id="closeSettings" class="iconBtn" aria-label="Back">◀</button><div class="stitle">SETTINGS</div></div>
+      <div id="settingsList"></div>
+    </div>
   </div>
 </div>
 
