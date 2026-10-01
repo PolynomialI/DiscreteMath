@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LOGIC BOMB · Defusal Manual v2.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@page { size: Letter; margin: 0.45in; }
+:root { --ink: #16191d; --mute: #5b6470; --line: #c9ced4; --accent: #c4861a; --soft: #f3f1ea; --red: #b3261e; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #d9dcdf; color: var(--ink); font: 11.5pt/1.42 "DejaVu Sans", "Noto Sans", Arial, sans-serif; }
+.page { width: 7.6in; min-height: 10.1in; margin: 0.3in auto; background: #fff; padding: 0.35in 0.4in; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,.15); page-break-after: always; break-after: page; }
+.page:last-child { page-break-after: auto; break-after: auto; }
+@media print { body { background: #fff; } .page { margin: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; } }
+.hdr { display: flex; justify-content: space-between; font: 8.5pt "DejaVu Sans Mono", monospace; color: var(--mute); border-bottom: 1.5px solid var(--ink); padding-bottom: 4px; margin-bottom: 14px; letter-spacing: .06em; }
+.foot { position: absolute; bottom: 0.25in; left: 0.4in; right: 0.4in; font: 8pt "DejaVu Sans Mono", monospace; color: var(--mute); text-align: center; }
+@media print { .foot { position: static; margin-top: 10px; } }
+h1 { font: bold 22pt "DejaVu Sans Mono", monospace; margin: 0 0 2px; letter-spacing: .02em; }
+h2 { font: bold 15pt "DejaVu Sans", sans-serif; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+h2 .n { font: bold 10pt "DejaVu Sans Mono", monospace; background: var(--ink); color: #fff; padding: 2px 7px; border-radius: 4px; }
+h3 { font: bold 10.5pt "DejaVu Sans", sans-serif; margin: 12px 0 4px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.flavor { font-style: italic; color: var(--mute); margin: 3px 0 8px; font-size: 10.5pt; }
+.mod { border: 1.5px solid var(--ink); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; break-inside: avoid; }
+.see { background: var(--soft); border-left: 4px solid var(--accent); padding: 6px 10px; margin: 6px 0 8px; font-size: 10.5pt; }
+.math { font-family: "DejaVu Sans Mono", monospace; font-weight: bold; white-space: nowrap; }
+ol.rules { margin: 4px 0; padding-left: 0; list-style: none; counter-reset: r; }
+ol.rules li { counter-increment: r; display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted var(--line); }
+ol.rules li::before { content: counter(r) "."; font-weight: bold; color: var(--mute); }
+ol.rules li .act { font-weight: bold; text-align: right; white-space: nowrap; }
+ol.rules li.else .math { font-family: inherit; font-weight: normal; font-style: italic; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid var(--line); padding: 4px 7px; text-align: left; vertical-align: top; }
+th { background: var(--soft); font-size: 9.5pt; letter-spacing: .04em; }
+td.c, th.c { text-align: center; }
+.ws td { height: 22px; }
+.small { font-size: 9.5pt; color: var(--mute); }
+.tip { font-size: 10pt; margin-top: 6px; }
+.tip b { color: var(--accent); }
+.warn { color: var(--red); font-weight: bold; }
+.cover { display: flex; flex-direction: column; justify-content: center; min-height: 9.3in; }
+.cover .big { font: bold 54pt "DejaVu Sans Mono", monospace; line-height: 1; letter-spacing: .04em; }
+.cover .big span { color: var(--accent); }
+.cover .sub { font: 16pt "DejaVu Sans", sans-serif; margin: 8px 0 30px; color: var(--mute); }
+.toc { columns: 2; font-size: 11pt; margin-top: 10px; }
+.toc div { break-inside: avoid; padding: 2px 0; }
+.toc b { display: inline-block; width: 30px; }
+.swatch { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; border: 1px solid #0003; }
+</style>
+</head>
+<body>
+
+<!-- ───────────── Page 1: Cover ───────────── -->
+<section class="page">
+  <div class="cover">
+    <div class="small" style="letter-spacing:.2em">DISCRETE MATHEMATICS · CLASSROOM EDITION</div>
+    <div class="big">LOGIC<br><span>BOMB</span></div>
+    <div class="sub">Defusal Manual · Version 2.0 (Quick-Reference)</div>
+    <div class="see" style="font-size:11.5pt">
+      <b>Expert, read this first.</b> The Defuser can see the bomb but not this manual. You can see this manual but not the bomb.
+      Only talking, and the mathematics, connect you. Every module below fits in one box. Find the box, do the math, give the order.
+    </div>
+    <h3>Contents</h3>
+    <div class="toc">
+      <div><b>p.2</b> Basics · Casing · Notation</div>
+      <div><b>p.3</b> Wires · The Button</div>
+      <div><b>p.4</b> Set Keypad · Simon Maps</div>
+      <div><b>p.5</b> Who’s on ∀irst · Venn Wires</div>
+      <div><b>p.6</b> Quantifier Grid · Truth Table</div>
+      <div><b>p.7</b> Needy: Argument Check · Saying symbols aloud</div>
+      <div><b>p.8</b> Worked examples (answer key)</div>
+    </div>
+    <h3>Math in this manual</h3>
+    <p style="margin:2px 0">Propositions and connectives · truth tables · conditionals and biconditionals · rules of inference ·
+      quantifiers and nested quantifiers · sets, set operations, cardinality · functions as sets of ordered pairs.</p>
+    <p class="small" style="margin-top:28px">An original classroom game inspired by cooperative bomb-defusal video games. Not affiliated with any commercial game.</p>
+  </div>
+</section>
+
+<!-- ───────────── Page 2: Basics ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>BASICS</span></div>
+  <h2>Defusing a Logic Bomb</h2>
+  <div class="grid2" style="margin-top:8px">
+    <div>
+      <h3>Win and lose</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li>Disarm <b>every module</b> before the timer hits 0:00.</li>
+        <li>A wrong action is a <b>strike</b>. The bomb explodes on its last strike (3 by default). After a strike the timer runs faster.</li>
+        <li>A module is disarmed when its <b>status light</b> (top-right) turns <b>green</b>. Do modules in any order.</li>
+        <li>The timer module has no rules. A <b>needy</b> module (if present) never disarms: just keep answering it.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>The one law</h3>
+      <div class="see" style="margin-top:0">When a box lists numbered rules, check them <b>top to bottom</b> and use <b>only the first rule that is TRUE</b>.</div>
+      <h3>Two reminders</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li><span class="math">P → Q</span> is FALSE only when P is TRUE and Q is FALSE.</li>
+        <li><span class="math">∀</span> about nothing is TRUE. <span class="math">∃</span> about nothing is FALSE.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Reading the casing (the Defuser rotates the bomb to see the sides)</h3>
+  <table>
+    <tr><th style="width:24%">On the casing</th><th>What the Defuser reports</th><th style="width:34%">What you write down</th></tr>
+    <tr><td>Serial number sticker</td><td>Six letters and digits, e.g. <span class="math">KA4T74</span></td>
+      <td><span class="math">D</span> = set of its digits <span class="math">{4, 7}</span><br><span class="math">V</span> = set of its vowels <span class="math">{A}</span></td></tr>
+    <tr><td>Batteries</td><td>How many battery cylinders (an AA holder has 2, a D holder has 1)</td><td><span class="math">b</span> = number of batteries</td></tr>
+    <tr><td>Indicators</td><td>Small round lights with a 3-letter label; lit (glowing) or not</td><td>Is at least one indicator <b>lit</b>?</td></tr>
+    <tr><td>Ports</td><td>Plugs such as USB or PARALLEL</td><td>Not used in this edition.</td></tr>
+  </table>
+  <p class="small">Sets ignore repeats: serial <span class="math">7A7B1C</span> gives <span class="math">D = {1, 7}</span>. A serial with no vowels gives <span class="math">V = ∅</span>.</p>
+
+  <h3>Notation</h3>
+  <table>
+    <tr><th class="c" style="width:12%">Symbol</th><th style="width:38%">Meaning</th><th class="c" style="width:12%">Symbol</th><th>Meaning</th></tr>
+    <tr><td class="c math">¬P</td><td>not P</td><td class="c math">∀x</td><td>for every x</td></tr>
+    <tr><td class="c math">P ∧ Q</td><td>P and Q</td><td class="c math">∃x</td><td>there is at least one x</td></tr>
+    <tr><td class="c math">P ∨ Q</td><td>P or Q (or both)</td><td class="c math">∃!x</td><td>there is <b>exactly one</b> x</td></tr>
+    <tr><td class="c math">P → Q</td><td>if P then Q</td><td class="c math">A ∪ B</td><td>union: in A or B</td></tr>
+    <tr><td class="c math">P ↔ Q</td><td>P if and only if Q (same truth value)</td><td class="c math">A ∩ B</td><td>intersection: in both</td></tr>
+    <tr><td class="c math">x ∈ A</td><td>x is an element of A</td><td class="c math">A − B</td><td>difference: in A but not B</td></tr>
+    <tr><td class="c math">|A|</td><td>cardinality: number of elements</td><td class="c math">A′</td><td>complement: not in A</td></tr>
+    <tr><td class="c math">∅</td><td>the empty set { }</td><td class="c math">f(x)</td><td>the y with (x, y) ∈ f</td></tr>
+  </table>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 2</div>
+</section>
+
+<!-- ───────────── Page 3: Wires + Button ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>MODULES 1–2</span></div>
+
+  <div class="mod">
+    <h2><span class="n">1</span>Wires</h2>
+    <div class="flavor">3 to 6 horizontal wires. Cut exactly one.</div>
+    <div class="see">Wires are numbered <b>from the top</b> (wire 1 = top). “Last” means the <b>lowest</b> one.
+      &nbsp;<span class="math">R(w)</span> red · <span class="math">B(w)</span> blue · <span class="math">Y(w)</span> yellow · <span class="math">K(w)</span> black · <span class="math">W(w)</span> white. The domain is the wires on the module.</div>
+    <div class="grid2">
+      <div><h3>3 wires</h3><ol class="rules">
+        <li><span class="math">¬∃w R(w)</span><span class="act">cut wire 2</span></li>
+        <li><span class="math">∀w (R(w) ∨ B(w))</span><span class="act">cut the last wire</span></li>
+        <li><span class="math">∃w W(w)</span><span class="act">cut the last white wire</span></li>
+        <li class="else"><span class="math">otherwise</span><span class="act">cut wire 1</span></li></ol></div>
+      <div><h3>4 wires</h3><ol class="rules">
+        <li><span class="math">∃!w R(w)</span><span class="act">cut the red wire</span></li>
+        <li><span class="math">∀w ¬Y(w)</span><span class="act">cut wire 1</span></li>
+        <li><span class="math">∃w K(w) ∧ b ≥ 2</span><span class="act">cut the last black wire</span></li>
+        <li class="else"><span class="math">otherwise</span><span class="act">cut wire 4</span></li></ol></div>
+      <div><h3>5 wires</h3><ol class="rules">
+        <li><span class="math">∃w K(w) ∧ ∃w W(w)</span><span class="act">cut wire 4</span></li>
+        <li><span class="math">∀w ¬R(w)</span><span class="act">cut wire 1</span></li>
+        <li><span class="math">∃d ∈ D (d is odd)</span><span class="act">cut the last wire</span></li>
+        <li class="else"><span class="math">otherwise</span><span class="act">cut wire 2</span></li></ol></div>
+      <div><h3>6 wires</h3><ol class="rules">
+        <li><span class="math">∀w ¬Y(w)</span><span class="act">cut wire 3</span></li>
+        <li><span class="math">∃!w W(w)</span><span class="act">cut the white wire</span></li>
+        <li><span class="math">∃w ∃v (w ≠ v ∧ R(w) ∧ R(v))</span><span class="act">cut the last red wire</span></li>
+        <li class="else"><span class="math">otherwise</span><span class="act">cut wire 6</span></li></ol></div>
+    </div>
+  </div>
+
+  <div class="mod">
+    <h2><span class="n">2</span>The Button</h2>
+    <div class="flavor">One big round button with a colored cap and a word on it. A light strip sits to its right.</div>
+    <div class="grid2">
+      <div>
+        <h3>Propositions</h3>
+        <table>
+          <tr><td class="c math">p</td><td>The button is red.</td></tr>
+          <tr><td class="c math">q</td><td>The label says <b>TRUE</b>.</td></tr>
+          <tr><td class="c math">r</td><td><span class="math">b ≥ 2</span> (two or more batteries)</td></tr>
+          <tr><td class="c math">s</td><td>At least one indicator is lit.</td></tr>
+        </table>
+        <h3>Rules</h3>
+        <ol class="rules">
+          <li><span class="math">p ∧ q</span><span class="act">TAP</span></li>
+          <li><span class="math">¬p ∧ ¬r</span><span class="act">HOLD</span></li>
+          <li><span class="math">q ∨ s</span><span class="act">TAP</span></li>
+          <li class="else"><span class="math">otherwise</span><span class="act">HOLD</span></li>
+        </ol>
+        <p class="tip"><b>TAP</b> = press and let go right away.</p>
+      </div>
+      <div>
+        <h3>Releasing a held button</h3>
+        <p style="margin:2px 0 6px">While held, the strip lights up. Work out the strip’s set. Release when the timer shows a digit from that set <b>in any position</b>.</p>
+        <table>
+          <tr><th>Strip</th><th>Release on the digit in…</th></tr>
+          <tr><td><span class="swatch" style="background:#1f5fd6"></span> Blue</td><td class="math">{1, 2, 3, 4} ∩ {4, 5, 6}</td></tr>
+          <tr><td><span class="swatch" style="background:#f4f4f4"></span> White</td><td class="math">{1, 3, 5} − {3, 5}</td></tr>
+          <tr><td><span class="swatch" style="background:#f2c230"></span> Yellow</td><td class="math">{5, 6, 7} ∩ {1, 3, 5}</td></tr>
+          <tr><td><span class="swatch" style="background:#d62828"></span> Red</td><td class="math">{x ∈ ℤ | 1 &lt; x &lt; 3}</td></tr>
+        </table>
+        <p class="tip"><b>Tip:</b> work out all four sets before the Defuser presses. Once they are holding, they can only tell you the strip color.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 3</div>
+</section>
+
+<!-- ───────────── Page 4: Keypad + Simon ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>MODULES 3–4</span></div>
+
+  <div class="mod">
+    <h2><span class="n">3</span>Set Keypad</h2>
+    <div class="flavor">Four square keys, each printed with a set.</div>
+    <div class="see">Press the keys in order of <b>cardinality</b>, from the <b>smallest</b> set to the <b>largest</b>. No two keys have the same size. A correct key lights green; a wrong key is a strike (correct keys stay lit).</div>
+    <div class="grid2">
+      <div>
+        <h3>The sets</h3>
+        <table>
+          <tr><td class="math">A = {1, 2, 3, 4}</td></tr>
+          <tr><td class="math">B = {3, 4, 5}</td></tr>
+          <tr><td class="math">C = {2, 4, 6, 8}</td></tr>
+          <tr><td>Universe <span class="math">𝕌 = {1, 2, 3, 4, 5, 6, 7, 8}</span>, so <span class="math">A′ = 𝕌 − A</span>.</td></tr>
+        </table>
+        <p class="tip"><b>Careful:</b> <span class="math">|∅| = 0</span> but <span class="math">|{∅}| = 1</span> (one element: the empty set). <span class="math">{A, B}</span> has 2 elements: the sets A and B.</p>
+      </div>
+      <div>
+        <h3>Worksheet</h3>
+        <table class="ws">
+          <tr><th>Key shows</th><th>Elements</th><th class="c">| |</th><th class="c">Order</th></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod">
+    <h2><span class="n">4</span>Simon Maps</h2>
+    <div class="flavor">A diamond of four colored pads. It flashes a sequence that grows by one each stage.</div>
+    <div class="see">For every flashed color <span class="math">x</span>, the Defuser presses <span class="math">f(x)</span>, in the same order, for the <b>whole</b> sequence shown so far. Which function?
+      &nbsp;<b>If <span class="math">V ≠ ∅</span></b> (serial has a vowel) use <span class="math">f</span>. <b>Otherwise</b> use <span class="math">g</span>.</div>
+    <table style="margin-top:4px">
+      <tr><td style="width:24%"><b>If V ≠ ∅</b></td><td><span class="math">f = { (Red, Blue), (Blue, Red), (Green, Yellow), (Yellow, Green) }</span></td></tr>
+      <tr><td><b>If V = ∅</b></td><td><span class="math">g = { (Red, Yellow), (Blue, Green), (Green, Blue), (Yellow, Red) }</span></td></tr>
+    </table>
+    <p class="tip">Read <span class="math">(Red, Blue) ∈ f</span> as “<span class="math">f(Red) = Blue</span>”: flashed red → press blue. The sequence has 3 to 5 stages. A wrong press is a strike and the stage starts over.</p>
+  </div>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 4</div>
+</section>
+
+<!-- ───────────── Page 5: Words + Venn ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>MODULES 5–6</span></div>
+
+  <div class="mod">
+    <h2><span class="n">5</span>Who’s on ∀irst</h2>
+    <div class="flavor">A screen showing a quantified statement and six word buttons. Three stages.</div>
+    <div class="see">Domain: <b>everyone in the class</b>. <span class="math">T(x, y)</span> means “<b>x is taller than y</b>”.
+      Translate the screen into English, find that sentence below, and the Defuser presses the button with its <b>code word</b>.</div>
+    <table>
+      <tr><th>English sentence</th><th class="c" style="width:22%">Code word</th></tr>
+      <tr><td>Someone is taller than everyone.</td><td class="c math">COMET</td></tr>
+      <tr><td>Everyone has someone taller than them.</td><td class="c math">EMBER</td></tr>
+      <tr><td>No one is taller than anyone.</td><td class="c math">GLACIER</td></tr>
+      <tr><td>Everyone is taller than someone.</td><td class="c math">BISHOP</td></tr>
+      <tr><td>Someone is taller than someone.</td><td class="c math">DYNAMO</td></tr>
+      <tr><td>Someone has everyone taller than them.</td><td class="c math">FALCON</td></tr>
+      <tr><td>Everyone is taller than everyone.</td><td class="c math">ATLAS</td></tr>
+      <tr><td>Someone is taller than no one.</td><td class="c math">HARBOR</td></tr>
+    </table>
+    <p class="tip"><b>Watch the order.</b> <span class="math">∀x ∃y</span> and <span class="math">∃x ∀y</span> say different things. Also check which variable comes first inside <span class="math">T( , )</span>: the first one is the taller person.</p>
+  </div>
+
+  <div class="mod">
+    <h2><span class="n">6</span>Venn Wires</h2>
+    <div class="flavor">4 to 6 vertical wires. Lights above, panels below.</div>
+    <div class="see">Wires are numbered <b>left to right</b>. Each wire is red, blue, striped red-and-blue, or white. Each has an LED above it (on/off) and a panel below it (★ or blank).</div>
+    <div class="grid2">
+      <div>
+        <h3>Sets</h3>
+        <table>
+          <tr><td class="c math">R</td><td>wires with red on them (red or striped)</td></tr>
+          <tr><td class="c math">B</td><td>wires with blue on them (blue or striped)</td></tr>
+          <tr><td class="c math">L</td><td>wires whose LED is on</td></tr>
+          <tr><td class="c math">S</td><td>wires with a ★ below</td></tr>
+        </table>
+        <div class="see" style="margin-top:8px;font-size:12pt">Cut every wire in <span class="math">K = (R ∩ L) ∪ (S − B)</span>.</div>
+        <p class="tip">Order doesn’t matter. Cutting a wire <b>not</b> in K is a strike. A white wire is in neither R nor B.</p>
+      </div>
+      <div>
+        <h3>Worksheet (✓ = yes)</h3>
+        <table class="ws">
+          <tr><th class="c">#</th><th class="c">R</th><th class="c">B</th><th class="c">L</th><th class="c">S</th><th class="c">R∩L</th><th class="c">S−B</th><th class="c">Cut?</th></tr>
+          <tr><td class="c">1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="c">2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="c">3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="c">4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="c">5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="c">6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 5</div>
+</section>
+
+<!-- ───────────── Page 6: Grid + Truth table ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>MODULES 7–8</span></div>
+
+  <div class="mod">
+    <h2><span class="n">7</span>Quantifier Grid</h2>
+    <div class="flavor">A green screen with a 3 × 3 grid of digits, and four round colored buttons.</div>
+    <div class="see">Rows <span class="math">r</span> go top to bottom, columns <span class="math">c</span> go left to right, and <span class="math">x</span> is the digit in row r, column c. Press the color of the first TRUE rule.</div>
+    <div class="grid2">
+      <ol class="rules">
+        <li><span class="math">∃r ∀c (x is even)</span><span class="act"><span class="swatch" style="background:#d62828"></span> RED</span></li>
+        <li><span class="math">∀r ∃c (x = 0)</span><span class="act"><span class="swatch" style="background:#1f5fd6"></span> BLUE</span></li>
+        <li><span class="math">∃c ∀r (x &gt; 5)</span><span class="act"><span class="swatch" style="background:#23a64a"></span> GREEN</span></li>
+        <li class="else"><span class="math">otherwise</span><span class="act"><span class="swatch" style="background:#f2c230"></span> YELLOW</span></li>
+      </ol>
+      <div class="small" style="font-size:10pt">
+        <b>How to say them:</b><br>
+        1. “Is there a <b>row</b> where <b>every</b> digit is even?”<br>
+        2. “Does <b>every row</b> contain a 0?”<br>
+        3. “Is there a <b>column</b> where every digit is bigger than 5?”<br>
+        0 counts as even.
+      </div>
+    </div>
+  </div>
+
+  <div class="mod">
+    <h2><span class="n">8</span>Truth Table</h2>
+    <div class="flavor">A screen with a formula in P and Q, four numbered T/F windows with arrows, and a SUBMIT key.</div>
+    <div class="see">Set each window to the formula’s truth value in that row of the truth table, then press <b>SUBMIT</b>. Either arrow flips T ↔ F. A wrong SUBMIT is a strike.</div>
+    <div class="grid2">
+      <table>
+        <tr><th class="c">Window</th><th class="c">P</th><th class="c">Q</th><th class="c">Formula</th></tr>
+        <tr><td class="c">1</td><td class="c">T</td><td class="c">T</td><td></td></tr>
+        <tr><td class="c">2</td><td class="c">T</td><td class="c">F</td><td></td></tr>
+        <tr><td class="c">3</td><td class="c">F</td><td class="c">T</td><td></td></tr>
+        <tr><td class="c">4</td><td class="c">F</td><td class="c">F</td><td></td></tr>
+      </table>
+      <table>
+        <tr><th class="c">P</th><th class="c">Q</th><th class="c math">¬P</th><th class="c math">P∧Q</th><th class="c math">P∨Q</th><th class="c math">P→Q</th><th class="c math">P↔Q</th></tr>
+        <tr><td class="c">T</td><td class="c">T</td><td class="c">F</td><td class="c">T</td><td class="c">T</td><td class="c">T</td><td class="c">T</td></tr>
+        <tr><td class="c">T</td><td class="c">F</td><td class="c">F</td><td class="c">F</td><td class="c">T</td><td class="c">F</td><td class="c">F</td></tr>
+        <tr><td class="c">F</td><td class="c">T</td><td class="c">T</td><td class="c">F</td><td class="c">T</td><td class="c">T</td><td class="c">F</td></tr>
+        <tr><td class="c">F</td><td class="c">F</td><td class="c">T</td><td class="c">F</td><td class="c">F</td><td class="c">T</td><td class="c">T</td></tr>
+      </table>
+    </div>
+    <p class="tip"><b>Tip:</b> <span class="math">¬</span> binds tighter than everything else: <span class="math">¬P ∨ Q</span> means <span class="math">(¬P) ∨ Q</span>, but <span class="math">¬(P ∨ Q)</span> negates the whole thing.</p>
+  </div>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 6</div>
+</section>
+
+<!-- ───────────── Page 7: Needy + reading aloud ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>NEEDY · APPENDIX</span></div>
+
+  <div class="mod">
+    <h2><span class="n">N</span>Needy: Argument Check</h2>
+    <div class="flavor">A screen asks “VALID ARGUMENT?” with Y and N keys and a 2-digit countdown. It wakes up every so often.</div>
+    <div class="see">When it shows an argument (premises, a line, then <span class="math">∴</span> conclusion), press <b>Y</b> if it is <b>valid</b> and <b>N</b> if it is <b>invalid</b>, before the 40-second countdown ends. Wrong answer or time out = strike. Match the pattern:</div>
+    <div class="grid2">
+      <table>
+        <tr><th colspan="2">VALID → press Y</th></tr>
+        <tr><td class="math">p → q, p ∴ q</td><td class="small">modus ponens</td></tr>
+        <tr><td class="math">p → q, ¬q ∴ ¬p</td><td class="small">modus tollens</td></tr>
+        <tr><td class="math">p → q, q → r ∴ p → r</td><td class="small">hypothetical syllogism</td></tr>
+        <tr><td class="math">p ∨ q, ¬p ∴ q</td><td class="small">disjunctive syllogism</td></tr>
+        <tr><td class="math">p ∴ p ∨ q</td><td class="small">addition</td></tr>
+        <tr><td class="math">p ∧ q ∴ p</td><td class="small">simplification</td></tr>
+        <tr><td class="math">∀x P(x) ∴ P(c)</td><td class="small">universal instantiation</td></tr>
+        <tr><td class="math">P(c) ∴ ∃x P(x)</td><td class="small">existential generalization</td></tr>
+        <tr><td class="math">∀x (P(x) → Q(x)), P(c) ∴ Q(c)</td><td class="small">universal modus ponens</td></tr>
+        <tr><td class="math">¬∀x P(x) ∴ ∃x ¬P(x)</td><td class="small">negating ∀</td></tr>
+      </table>
+      <table>
+        <tr><th colspan="2">INVALID → press N</th></tr>
+        <tr><td class="math">p → q, q ∴ p</td><td class="small">affirming the conclusion</td></tr>
+        <tr><td class="math">p → q, ¬p ∴ ¬q</td><td class="small">denying the hypothesis</td></tr>
+        <tr><td class="math">p ∨ q, p ∴ ¬q</td><td class="small">“or” is not “exclusive or”</td></tr>
+        <tr><td class="math">∀x (P(x) → Q(x)), Q(c) ∴ P(c)</td><td class="small">affirming the conclusion (∀)</td></tr>
+        <tr><td class="math">∃x P(x) ∴ ∀x P(x)</td><td class="small">hasty generalization</td></tr>
+        <tr><td class="math">¬∀x P(x) ∴ ∀x ¬P(x)</td><td class="small">bad negation</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="mod">
+    <h2><span class="n">B</span>Saying symbols aloud</h2>
+    <div class="flavor">Agree on these words before the timer starts.</div>
+    <table>
+      <tr><th class="c">Symbol</th><th>Say</th><th class="c">Symbol</th><th>Say</th><th class="c">Symbol</th><th>Say</th></tr>
+      <tr><td class="c math">∀</td><td>“for all”</td><td class="c math">∪</td><td>“union” / “cup”</td><td class="c math">∅</td><td>“empty set”</td></tr>
+      <tr><td class="c math">∃</td><td>“there exists”</td><td class="c math">∩</td><td>“intersect” / “cap”</td><td class="c math">{ }</td><td>“set of …”</td></tr>
+      <tr><td class="c math">¬</td><td>“not”</td><td class="c math">−</td><td>“minus”</td><td class="c math">′</td><td>“prime” (complement)</td></tr>
+      <tr><td class="c math">∧</td><td>“and” / “wedge”</td><td class="c math">→</td><td>“arrow” / “implies”</td><td class="c math">∴</td><td>“therefore”</td></tr>
+      <tr><td class="c math">∨</td><td>“or” / “vee”</td><td class="c math">↔</td><td>“double arrow” / “iff”</td><td class="c math">★</td><td>“star”</td></tr>
+    </table>
+  </div>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 7</div>
+</section>
+
+<!-- ───────────── Page 8: Worked examples ───────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB · MANUAL v2.0</span><span>ANSWER KEY · WORKED EXAMPLES</span></div>
+  <h2>Worked examples</h2>
+  <p class="small" style="margin-top:4px">Casing for every example: serial <span class="math">KA4T74</span> → <span class="math">D = {4, 7}</span>, <span class="math">V = {A}</span>; one AA holder → <span class="math">b = 2</span>; indicator NEG lit.</p>
+  <table>
+    <tr><th style="width:21%">Module</th><th style="width:27%">Bomb shows</th><th>Work</th><th style="width:15%">Answer</th></tr>
+    <tr><td>1 · Wires</td><td>4 wires: blue, red, blue, yellow</td><td>Exactly one red, so rule 1 <span class="math">∃!w R(w)</span> is TRUE.</td><td>Cut wire 2</td></tr>
+    <tr><td>1 · Wires</td><td>5 wires: red, yellow, blue, black, blue</td><td>Rule 1 needs a white: FALSE. Rule 2: there is a red, FALSE. Rule 3: 7 ∈ D is odd, TRUE.</td><td>Cut wire 5</td></tr>
+    <tr><td>2 · Button</td><td>Blue button, label “NOT”</td><td>p F, q F, r T (b = 2), s T. Rule 1: F. Rule 2: <span class="math">¬p ∧ ¬r</span> = T ∧ F = F. Rule 3: <span class="math">q ∨ s</span> = T.</td><td>TAP</td></tr>
+    <tr><td>2 · Button</td><td>Held; strip is yellow</td><td><span class="math">{5,6,7} ∩ {1,3,5} = {5}</span></td><td>Release on a 5</td></tr>
+    <tr><td>3 · Keypad</td><td>A ∪ B · ∅ · C − B · B ∩ C</td><td><span class="math">|A ∪ B| = |{1,2,3,4,5}| = 5</span>, <span class="math">|∅| = 0</span>, <span class="math">|C − B| = |{2,6,8}| = 3</span>, <span class="math">|B ∩ C| = |{4}| = 1</span></td><td>∅, B∩C, C−B, A∪B</td></tr>
+    <tr><td>4 · Simon</td><td>Flashes red, then red, green</td><td><span class="math">V ≠ ∅</span> → use f. f(red) = blue, f(green) = yellow.</td><td>blue; then blue, yellow</td></tr>
+    <tr><td>5 · ∀irst</td><td><span class="math">∀x ∃y T(x,y)</span></td><td>“For every x there is a y that x is taller than” = Everyone is taller than someone.</td><td>BISHOP</td></tr>
+    <tr><td>5 · ∀irst</td><td><span class="math">∃y ∀x T(x,y)</span></td><td>“There is a y such that every x is taller than y” = Someone has everyone taller than them.</td><td>FALCON</td></tr>
+    <tr><td>6 · Venn</td><td>1 red/LED on · 2 blue/LED on/★ · 3 white/★ · 4 striped/LED on · 5 red/★ · 6 blue</td><td><span class="math">R ∩ L = {1, 4}</span>, <span class="math">S − B = {3, 5}</span> (2 has blue). <span class="math">K = {1, 3, 4, 5}</span>.</td><td>Cut 1, 3, 4, 5</td></tr>
+    <tr><td>7 · Grid</td><td>7 1 3 / 8 2 1 / 9 5 1</td><td>No all-even row. Row 1 has no 0. Column 1 = 7, 8, 9, all &gt; 5: rule 3 TRUE.</td><td>GREEN</td></tr>
+    <tr><td>8 · Truth</td><td><span class="math">¬P → Q</span></td><td>Row TT: F→T = T. TF: F→F = T. FT: T→T = T. FF: T→F = F.</td><td>T T T F, SUBMIT</td></tr>
+    <tr><td>N · Argument</td><td><span class="math">∀x (P(x) → Q(x)), Q(c) ∴ P(c)</span></td><td>Affirming the conclusion (∀). Q(c) could be true for another reason.</td><td>N</td></tr>
+  </table>
+  <h3>Why these are the hard parts</h3>
+  <ul style="margin:0;padding-left:18px;font-size:10.5pt">
+    <li><b>Vacuous truth.</b> Wires rule <span class="math">∀w ¬Y(w)</span> is TRUE when there is no yellow wire at all.</li>
+    <li><b>Quantifier order.</b> <span class="math">∀x ∃y</span> (everyone has a partner) is weaker than <span class="math">∃y ∀x</span> (one person works for everyone).</li>
+    <li><b>Sets of sets.</b> <span class="math">{∅}</span> is not empty. It has one element.</li>
+  </ul>
+  <div class="foot">LOGIC BOMB · Defusal Manual v2.0 · page 8</div>
+</section>
+</body>
+</html>

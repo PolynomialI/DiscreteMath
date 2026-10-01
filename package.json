@@ -1,0 +1,17 @@
+{
+  "name": "logic-bomb",
+  "version": "2.0.0",
+  "private": true,
+  "description": "LOGIC BOMB: a 3D cooperative bomb-defusal game for Discrete Math",
+  "type": "module",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "test": "node test/logic.test.mjs",
+    "pdf": "node tools/pdf.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.63.0",
+    "three": "^0.186.1"
+  }
+}
