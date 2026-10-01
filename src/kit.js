@@ -185,7 +185,12 @@ export function screen(tex, w, h, { depth = 0.03, bezel = 0.03, intensity = 1.2,
 // A module's base: brushed plate + 4 screws + optional status LED. Front face of plate at z = 0.
 export function chassis({ led = true } = {}) {
   const g = new THREE.Group();
-  const plate = mesh(roundedSlab(PLATE, PLATE, 0.05, 0.05, 0.014, 4), M.alu);
+  const geo = roundedSlab(PLATE, PLATE, 0.05, 0.05, 0.014, 4);
+  // shift each plate's UVs so no two modules share the same scratches
+  const du = screwRng.next(), dv = screwRng.next();
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) + du, uv.getY(i) + dv);
+  const plate = mesh(geo, M.alu);
   g.add(plate);
   const s = PLATE / 2 - 0.045;
   for (const [x, y] of [[-s, -s], [s, -s], [-s, s], [s, s]]) {
