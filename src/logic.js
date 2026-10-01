@@ -132,9 +132,9 @@ export function solveWires(colors, e) {
     return { cut: 1, rule: 4 };
   }
   if (n === 4) {
-    if (count('red') === 1) return { cut: last('red'), rule: 1 };
-    if (!has('yellow')) return { cut: 1, rule: 2 };
-    if (has('black') && f.b >= 2) return { cut: last('black'), rule: 3 };
+    if (!has('yellow')) return { cut: 1, rule: 1 };
+    if (has('black')) return { cut: last('black'), rule: 2 };
+    if (colors.every((c) => c === 'red' || c === 'yellow')) return { cut: 3, rule: 3 };
     return { cut: 4, rule: 4 };
   }
   if (n === 5) {
@@ -145,7 +145,7 @@ export function solveWires(colors, e) {
   }
   if (n === 6) {
     if (!has('yellow')) return { cut: 3, rule: 1 };
-    if (count('white') === 1) return { cut: last('white'), rule: 2 };
+    if (has('white')) return { cut: last('white'), rule: 2 };
     if (count('red') >= 2) return { cut: last('red'), rule: 3 };
     return { cut: 6, rule: 4 };
   }
@@ -604,6 +604,22 @@ export const MODULE_TYPES = {
 };
 export const NEEDY_TYPE = { name: 'Argument Check', gen: () => ({}), Logic: NeedyLogic };
 
+// Difficulty modes (the only choice on the title screen). The case is always 2 × 3;
+// bombs with more than 5 modules get a second face on the back. Unused bays get blank covers.
+const ALL = ['wires', 'button', 'keypad', 'simon', 'words', 'venn', 'grid', 'truth'];
+export const MODES = [
+  { id: 'intro', name: 'Introduction', count: 3, strikes: 3, minutes: 5, needy: false, modules: ['wires', 'button', 'keypad'] },
+  { id: 'basics', name: 'The Basics', count: 4, strikes: 3, minutes: 5, needy: false, modules: ['wires', 'button', 'keypad', 'simon', 'grid'] },
+  { id: 'moderate', name: 'Moderate', count: 5, strikes: 3, minutes: 4, needy: false, modules: ALL },
+  { id: 'needy', name: 'Needy', count: 5, strikes: 2, minutes: 5, needy: true, modules: ALL },
+  { id: 'challenging', name: 'Challenging', count: 8, strikes: 2, minutes: 6, needy: false, modules: ALL },
+  { id: 'extreme', name: 'Extreme', count: 11, strikes: 1, minutes: 6, needy: true, modules: ALL },
+];
+
+export function settingsForMode(mode) {
+  return { rows: 2, cols: 3, twoSided: mode.count > 5, minutes: mode.minutes, strikes: mode.strikes, needy: mode.needy, modules: mode.modules, count: mode.count, mode: mode.id };
+}
+
 export const DEFAULT_SETTINGS = {
   rows: 2,
   cols: 3,
@@ -626,7 +642,10 @@ export function generateBomb(seed, settings) {
 
   const timerSlot = slots.findIndex((s) => s.face === 0 && s.row === 0 && s.col === Math.floor((settings.cols - 1) / 2));
   const free = slots.filter((_, i) => i !== timerSlot);
-  const order = rng.fork('slots').shuffle(free);
+  const shuffled = rng.fork('slots').shuffle(free);
+  const n = settings.count ?? shuffled.length; // modules on the bomb (needy included)
+  const order = shuffled.slice(0, n);
+  const empties = shuffled.slice(n);
 
   const types = settings.modules.length ? settings.modules : Object.keys(MODULE_TYPES);
   const mods = [];
@@ -645,7 +664,7 @@ export function generateBomb(seed, settings) {
     const data = def.gen(mrng, edge);
     mods.push({ id: i, type, slot, data, def, rng: mrng.fork('live') });
   });
-  return { seed, settings, edge, timerSlot: slots[timerSlot], modules: mods, seconds: settings.minutes * 60 };
+  return { seed, settings, edge, timerSlot: slots[timerSlot], modules: mods, empties, seconds: settings.minutes * 60 };
 }
 
 export function createLogic(m, edge) {

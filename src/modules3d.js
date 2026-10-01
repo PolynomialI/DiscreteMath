@@ -48,7 +48,11 @@ class ModuleView {
     this.group.userData.view = this;
   }
   addPart(meshObj, handlers, mats) {
-    meshObj.userData.part = { view: this, mats: mats || [meshObj.material].flat(), ...handlers };
+    const part = { view: this, mats: mats || [meshObj.material].flat(), ...handlers };
+    meshObj.userData.part = part;
+    // Labels, LEDs and other details sit in front of the clickable cap inside the same
+    // group, so the whole group must count as the button (otherwise only the rim clicks).
+    if (meshObj.parent && meshObj.parent !== this.group) meshObj.parent.userData.part = part;
     this.parts.push(meshObj);
     return meshObj;
   }
@@ -849,6 +853,22 @@ export class NeedyView extends ModuleView {
   }
   update() {
     this.refresh(false);
+  }
+}
+
+// ───────────────────────── Blank cover for unused bays ─────────────────────────
+export class EmptyView extends ModuleView {
+  constructor(game) {
+    super(game, null, { solved: true }, { led: false });
+    // vent slots stamped into a darker inset plate
+    const inset = mesh(roundedSlab(0.6, 0.5, 0.04, 0.012, 0.004), M.dark);
+    inset.position.z = 0.012;
+    this.group.add(inset);
+    for (let i = 0; i < 7; i++) {
+      const slot = mesh(roundedSlab(0.045, 0.36, 0.022, 0.008, 0.003), M.bayFloor, { cast: false });
+      slot.position.set(-0.24 + i * 0.08, 0, 0.0135);
+      this.group.add(slot);
+    }
   }
 }
 

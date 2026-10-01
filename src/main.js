@@ -3,8 +3,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { initKit, M, T, updateTweens } from './kit.js';
 import * as TX from './tex.js';
 import { buildCase, buildDesk, bayCenter, PLATE_Z, DEPTH } from './bomb3d.js';
-import { VIEW_TYPES, TimerView } from './modules3d.js';
-import { generateBomb, createLogic, DEFAULT_SETTINGS, MODULE_TYPES, randomSeed, formatTime, RELEASE_DIGIT, WORD_FORMS } from './logic.js';
+import { VIEW_TYPES, TimerView, EmptyView } from './modules3d.js';
+import { createExplosion } from './explode.js';
+import { generateBomb, createLogic, MODES, settingsForMode, randomSeed, formatTime, RELEASE_DIGIT, WORD_FORMS } from './logic.js';
 import { initAudio, sfx } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -59,7 +60,8 @@ const game = {
   strikes: 0,
   maxStrikes: 3,
   seed: '',
-  settings: { ...DEFAULT_SETTINGS },
+  settings: settingsForMode(MODES[0]),
+  mode: MODES[0],
   blink: false,
   timerText: () => formatTime(game.timeLeft),
   sfx: (n, v) => sfx(n, v),
@@ -68,8 +70,11 @@ const game = {
 
 let bomb = null; // { root, views, timer, W, H, desk }
 let focused = null;
-const bombQuat = new THREE.Quaternion();
-const bombQuatTarget = new THREE.Quaternion();
+// Orbit-style rotation: yaw spins freely, pitch tilts up to ~80°. No roll, so the bomb never ends up sideways.
+let yaw = 0, pitch = 0, yawT = 0, pitchT = 0;
+const PITCH_MAX = 1.4;
+const bombEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+const nearestFace = (target) => Math.round((yawT - target) / (Math.PI * 2)) * Math.PI * 2 + target;
 const camPos = new THREE.Vector3(), camPosTarget = new THREE.Vector3();
 const camLook = new THREE.Vector3(), camLookTarget = new THREE.Vector3();
 let zoom = 1;
@@ -95,8 +100,10 @@ function disposeBomb() {
       m.dispose();
     }
   });
+  if (bomb.blast) bomb.blast.group.traverse((o) => { o.geometry?.dispose(); if (o.material && !mats.has(o.material)) o.material.dispose(); });
   scene.remove(bomb.root);
   scene.remove(bomb.desk);
+  if (bomb.blast) scene.remove(bomb.blast.group);
   bomb = null;
 }
 
@@ -116,6 +123,7 @@ function buildBomb(seed, settings) {
   };
   const timer = new TimerView(game);
   place(timer, def.timerSlot);
+  for (const slot of def.empties) place(new EmptyView(game), slot);
   for (const m of def.modules) {
     const logic = createLogic(m, def.edge);
     const view = new VIEW_TYPES[m.type](game, m, logic);
@@ -131,15 +139,15 @@ function buildBomb(seed, settings) {
 
 function overviewDistance() {
   const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-  const fitH = (bomb.H / 2 + 0.35) / t;
-  const fitW = (bomb.W / 2 + 0.35) / (t * camera.aspect);
+  const fitH = (bomb.H / 2 + 0.12) / t;
+  const fitW = (bomb.W / 2 + 0.12) / (t * camera.aspect);
   return Math.max(fitH, fitW) + DEPTH / 2;
 }
 
 function setOverview() {
   focused = null;
   const d = overviewDistance() * zoom;
-  camPosTarget.set(0, d * 0.1, d);
+  camPosTarget.set(0, d * 0.06, d);
   camLookTarget.set(0, 0, 0);
   scene.fog.near = overviewDistance() + 2.5;
   scene.fog.far = scene.fog.near + 14;
@@ -149,9 +157,10 @@ function setOverview() {
 function focusOn(view) {
   focused = view;
   const face = view.slot.face;
-  bombQuatTarget.setFromAxisAngle(new THREE.Vector3(0, 1, 0), face === 0 ? 0 : Math.PI);
+  yawT = nearestFace(face === 0 ? 0 : Math.PI);
+  pitchT = 0;
   const local = view.group.position.clone();
-  const world = local.applyQuaternion(bombQuatTarget);
+  const world = local.applyQuaternion(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yawT, 0)));
   const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const d = Math.max(0.62 / t, 0.62 / (t * camera.aspect));
   camLookTarget.copy(world);
@@ -160,22 +169,11 @@ function focusOn(view) {
 }
 
 // ───────────────────────── Flow ─────────────────────────
-function readSettings() {
-  const mods = [...document.querySelectorAll('#mods input:checked')].map((i) => i.value);
-  return {
-    rows: +$('rows').value,
-    cols: +$('cols').value,
-    twoSided: $('twoSided').checked,
-    minutes: +$('minutes').value,
-    strikes: +$('strikes').value,
-    needy: $('needy').checked,
-    modules: mods.length ? mods : Object.keys(MODULE_TYPES),
-  };
-}
-
-function startGame(seed, settings) {
+function startGame(seed, mode) {
   initAudio();
+  const settings = settingsForMode(mode);
   game.seed = seed;
+  game.mode = mode;
   game.settings = settings;
   buildBomb(seed, settings);
   game.timeLeft = settings.minutes * 60;
@@ -184,8 +182,8 @@ function startGame(seed, settings) {
   game.state = 'playing';
   idleSpin = false;
   zoom = 1;
-  bombQuat.identity();
-  bombQuatTarget.identity();
+  yaw = yawT = 0;
+  pitch = pitchT = 0;
   setOverview();
   camPos.copy(camPosTarget).multiplyScalar(1.6);
   camLook.copy(camLookTarget);
@@ -194,17 +192,18 @@ function startGame(seed, settings) {
 }
 
 function showMenuBomb() {
-  buildBomb('MENU', { ...DEFAULT_SETTINGS });
+  buildBomb('MENU', settingsForMode(MODES[2]));
   game.state = 'menu';
-  game.timeLeft = DEFAULT_SETTINGS.minutes * 60;
+  game.timeLeft = 300;
   game.strikes = 0;
+  game.maxStrikes = 3;
   idleSpin = true;
   zoom = 1.05;
-  bombQuat.identity();
-  bombQuatTarget.setFromEuler(new THREE.Euler(0.25, -0.5, 0));
+  yaw = 0; pitch = 0;
+  yawT = -0.5; pitchT = 0.25;
   setOverview();
-  // keep the bomb clear of the settings card on wide screens
-  const shift = window.innerWidth > 900 ? -Math.min(2.2, 0.0016 * window.innerWidth) : 0;
+  // keep the bomb clear of the menu card on wide screens
+  const shift = window.innerWidth > 900 ? -Math.min(1.6, 0.0011 * window.innerWidth) : 0;
   camPosTarget.x += shift;
   camLookTarget.x += shift;
   camPos.copy(camPosTarget);
@@ -241,24 +240,41 @@ function report(view, res) {
 function endGame(won, reason) {
   if (game.state !== 'playing') return;
   game.state = 'over';
-  setOverview();
+  setHover(null);
+  activePart = null;
   const f = $('flash');
   if (!won) {
     sfx('boom');
-    shake = 2.2;
+    shake = 3;
     f.className = '';
     void f.offsetWidth;
     f.className = 'boom';
-  } else sfx('win');
-  const s = game.settings;
+    blowUp();
+  } else { sfx('win'); setOverview(); }
   $('resTitle').textContent = won ? 'BOMB DEFUSED' : 'BOOM';
   $('resTitle').className = won ? 'win' : 'lose';
   $('resReason').textContent = won ? 'Every module disarmed. The logic held.' : reason;
   $('resTime').textContent = formatTime(game.timeLeft);
   $('resStrikes').textContent = `${game.strikes} / ${game.maxStrikes}`;
-  $('resSeed').textContent = game.seed;
-  $('resLayout').textContent = `${s.rows}×${s.cols}${s.twoSided ? ' · two-sided' : ''}${s.needy ? ' · needy' : ''}`;
-  setTimeout(() => { showScreen('result'); document.body.classList.remove('playing', 'focused'); }, won ? 900 : 1600);
+  $('resMode').textContent = game.mode.name;
+  setTimeout(() => { showScreen('result'); document.body.classList.remove('playing', 'focused'); }, won ? 900 : 3400);
+}
+
+// Tears the bomb apart: every casing part and module becomes a piece of debris.
+function blowUp() {
+  zoom = 1.45;
+  setOverview();
+  bomb.root.updateMatrixWorld(true);
+  const pieces = [];
+  for (const child of [...bomb.root.children]) {
+    if (child.userData.view) { pieces.push(child); continue; }
+    // the casing group: break faces and edge strips into their parts too
+    for (const part of [...child.children]) {
+      if (part.isGroup && part.children.length > 1) pieces.push(...part.children);
+      else pieces.push(part);
+    }
+  }
+  bomb.blast = createExplosion(scene, pieces, bomb.desk.children[0].position.y);
 }
 
 // ───────────────────────── Input ─────────────────────────
@@ -307,13 +323,15 @@ function setHover(part) {
 
 const canvasEl = renderer.domElement;
 canvasEl.addEventListener('contextmenu', (e) => e.preventDefault());
+// Buttons and wires work at any zoom level. Clicking a module's plate zooms in on it;
+// clicking anywhere else (the case or empty space) zooms back out.
 canvasEl.addEventListener('pointerdown', (ev) => {
   if (game.state !== 'playing') return;
   canvasEl.setPointerCapture(ev.pointerId);
   if (ev.button === 2) { setOverview(); return; }
   const p = pick(ev);
   down = { x: ev.clientX, y: ev.clientY, lx: ev.clientX, ly: ev.clientY, moved: false, ...p };
-  if (focused && p.part && p.view === focused) {
+  if (p.part) {
     activePart = p.part;
     p.part.down?.(ev);
   }
@@ -325,27 +343,25 @@ canvasEl.addEventListener('pointermove', (ev) => {
     if (Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 6) down.moved = true;
     down.lx = ev.clientX;
     down.ly = ev.clientY;
-    if (!focused && down.moved) {
-      const qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.008);
-      const qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * 0.008);
-      bombQuatTarget.premultiply(qy).premultiply(qx);
+    if (!focused && !down.part && down.moved) {
+      yawT += dx * 0.006;
+      pitchT = THREE.MathUtils.clamp(pitchT + dy * 0.005, -PITCH_MAX, PITCH_MAX);
     }
     return;
   }
   const p = pick(ev);
-  setHover(focused && p.view === focused ? p.part : null);
-  if (!focused && p.view) canvasEl.style.cursor = 'zoom-in';
+  setHover(p.part || null);
+  if (!p.part && !focused && p.view && !(p.view instanceof EmptyView)) canvasEl.style.cursor = 'zoom-in';
 });
 canvasEl.addEventListener('pointerup', (ev) => {
   if (activePart) { activePart.up?.(ev); activePart = null; }
   if (!down || game.state !== 'playing') { down = null; return; }
   const d = down;
   down = null;
-  if (d.moved) return;
-  if (focused) {
-    if (!d.view) setOverview();
-    else if (d.view !== focused) focusOn(d.view);
-  } else if (d.view) focusOn(d.view);
+  if (d.moved || d.part) return;
+  const target = d.view && !(d.view instanceof EmptyView) ? d.view : null;
+  if (target) { if (target !== focused) focusOn(target); }
+  else if (focused) setOverview();
 });
 canvasEl.addEventListener('pointercancel', () => { activePart?.up?.(); activePart = null; down = null; });
 canvasEl.addEventListener('wheel', (ev) => {
@@ -356,11 +372,12 @@ canvasEl.addEventListener('wheel', (ev) => {
 window.addEventListener('keydown', (ev) => {
   if (game.state !== 'playing') return;
   if (ev.key === 'Escape') setOverview();
-  if (ev.key === 'f' || ev.key === 'F') { setOverview(); bombQuatTarget.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)); }
+  if (ev.key === 'f' || ev.key === 'F') { setOverview(); yawT += Math.PI; }
   const step = 0.25;
   const rot = { ArrowLeft: [0, -step], ArrowRight: [0, step], ArrowUp: [-step, 0], ArrowDown: [step, 0] }[ev.key];
   if (rot && !focused) {
-    bombQuatTarget.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rot[0], rot[1], 0)));
+    pitchT = THREE.MathUtils.clamp(pitchT + rot[0], -PITCH_MAX, PITCH_MAX);
+    yawT += rot[1];
     ev.preventDefault();
   }
 });
@@ -372,35 +389,21 @@ window.addEventListener('resize', () => {
 });
 
 // ───────────────────────── UI wiring ─────────────────────────
-function buildModuleChecks() {
-  const box = $('mods');
-  for (const [k, def] of Object.entries(MODULE_TYPES)) {
-    const l = document.createElement('label');
-    l.className = 'chk';
-    l.innerHTML = `<input type="checkbox" value="${k}" checked><span>${def.name}</span>`;
-    box.appendChild(l);
+function buildModeList() {
+  const box = $('modes');
+  for (const mode of MODES) {
+    const b = document.createElement('button');
+    b.className = 'mode';
+    const m = mode.count + (mode.count === 1 ? ' module' : ' modules');
+    b.innerHTML = `<span class="mname">${mode.name}</span><span class="mstats">${m} · ${mode.strikes} strike${mode.strikes > 1 ? 's' : ''} · ${mode.minutes}:00</span>`;
+    b.addEventListener('click', () => startGame(randomSeed(), mode));
+    box.appendChild(b);
   }
-  box.addEventListener('change', updateCount);
 }
-function updateCount() {
-  const s = readSettings();
-  const slots = s.rows * s.cols * (s.twoSided ? 2 : 1) - 1;
-  $('slotInfo').textContent = `${slots} module${slots === 1 ? '' : 's'} + timer` + (s.needy ? ' (1 needy)' : '');
-}
-for (const id of ['rows', 'cols', 'twoSided', 'needy']) $(id).addEventListener('change', updateCount);
-$('seed').value = randomSeed();
-$('dice').addEventListener('click', () => { $('seed').value = randomSeed(); });
-$('start').addEventListener('click', () => {
-  const seed = ($('seed').value || randomSeed()).trim().toUpperCase();
-  $('seed').value = seed;
-  startGame(seed, readSettings());
-});
-$('retry').addEventListener('click', () => startGame(game.seed, game.settings));
-$('newBomb').addEventListener('click', () => { const s = randomSeed(); $('seed').value = s; startGame(s, game.settings); });
-$('toMenu').addEventListener('click', () => { $('seed').value = randomSeed(); showMenuBomb(); });
+$('retry').addEventListener('click', () => startGame(game.seed, game.mode));
+$('newBomb').addEventListener('click', () => startGame(randomSeed(), game.mode));
+$('toMenu').addEventListener('click', () => showMenuBomb());
 $('quit').addEventListener('click', () => { if (confirm('Abandon this bomb?')) showMenuBomb(); });
-$('backBtn').addEventListener('click', () => setOverview());
-$('flipBtn').addEventListener('click', () => { setOverview(); bombQuatTarget.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)); });
 
 // ───────────────────────── Loop ─────────────────────────
 let last = performance.now();
@@ -422,10 +425,12 @@ function frame() {
     for (const v of bomb.views) v.update(dt);
   }
   updateTweens(dt);
-  if (idleSpin) bombQuatTarget.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dt * 0.12));
+  if (idleSpin) yawT += dt * 0.12;
   const k = 1 - Math.exp(-dt * 9);
-  bombQuat.slerp(bombQuatTarget, k);
-  if (bomb) bomb.root.quaternion.copy(bombQuat);
+  yaw += (yawT - yaw) * k;
+  pitch += (pitchT - pitch) * k;
+  if (bomb) bomb.root.quaternion.setFromEuler(bombEuler.set(pitch, yaw, 0));
+  if (bomb?.blast) bomb.blast.update(dt, camera);
   camPos.lerp(camPosTarget, 1 - Math.exp(-dt * 6));
   camLook.lerp(camLookTarget, 1 - Math.exp(-dt * 6));
   camera.position.copy(camPos);
@@ -442,13 +447,25 @@ function frame() {
 // ───────────────────────── Debug / test hooks ─────────────────────────
 // Used by tools/shot.mjs to drive the real input handlers in a headless browser.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const snap = () => { bombQuat.copy(bombQuatTarget); camPos.copy(camPosTarget); camLook.copy(camLookTarget); };
+const snap = () => { yaw = yawT; pitch = pitchT; camPos.copy(camPosTarget); camLook.copy(camLookTarget); };
 window.__lb = {
   game,
   count: () => bomb.views.length,
   views: () => bomb.views,
   focus: (i) => { i < 0 ? focusOn(bomb.timer) : focusOn(bomb.views[i]); snap(); },
-  rotate: (rx, ry) => { setOverview(); bombQuatTarget.setFromEuler(new THREE.Euler(rx, ry, 0)); snap(); },
+  rotate: (rx, ry) => { setOverview(); pitchT = rx; yawT = ry; snap(); },
+  start: (i) => startGame('TEST' + i, MODES[i]),
+  // screen pixel at the visual centre of a part (used to test real mouse clicks)
+  screenPos(vi, pi) {
+    const m = bomb.views[vi].parts[pi];
+    const o = m.parent && m.parent !== bomb.views[vi].group ? m.parent : m;
+    const box = new THREE.Box3().setFromObject(o);
+    const c = box.getCenter(new THREE.Vector3());
+    c.z = box.max.z; // front surface
+    c.applyMatrix4(new THREE.Matrix4()); c.project(camera);
+    const r = renderer.domElement.getBoundingClientRect();
+    return [r.left + (c.x + 1) / 2 * r.width, r.top + (1 - c.y) / 2 * r.height];
+  },
   overview: () => { setOverview(); snap(); },
   async autoplay() {
     const log = [];
@@ -508,8 +525,7 @@ async function boot() {
   await new Promise((r) => setTimeout(r, 30)); // let the loading text paint
   initKit();
   scene.background = TX.backdrop();
-  buildModuleChecks();
-  updateCount();
+  buildModeList();
   showMenuBomb();
   $('loading').classList.add('gone');
   requestAnimationFrame(frame);

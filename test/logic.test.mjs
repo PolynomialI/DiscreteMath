@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   solveWires, solveButton, keypadOrder, KEYPAD_EXPRS, vennCutSet, solveGrid, truthColumn, parse,
   propositionalValid, ARGUMENTS, WORD_FORMS, generateBomb, createLogic, DEFAULT_SETTINGS, MODULE_TYPES,
-  edgeFacts, formatTime, RELEASE_DIGIT, SIMON_F, SIMON_G, WIRE_COLORS,
+  edgeFacts, formatTime, RELEASE_DIGIT, SIMON_F, SIMON_G, WIRE_COLORS, MODES, settingsForMode,
 } from '../src/logic.js';
 
 let passed = 0;
@@ -24,10 +24,10 @@ t('wires: hand-checked rules', () => {
   assert.deepEqual(solveWires(['red', 'blue', 'red'], even), { cut: 3, rule: 2 });
   assert.deepEqual(solveWires(['white', 'red', 'yellow'], even), { cut: 1, rule: 3 });
   assert.deepEqual(solveWires(['red', 'yellow', 'black'], even), { cut: 1, rule: 4 });
-  assert.deepEqual(solveWires(['blue', 'red', 'blue', 'yellow'], even), { cut: 2, rule: 1 });
-  assert.deepEqual(solveWires(['red', 'red', 'blue', 'black'], even), { cut: 1, rule: 2 });
-  assert.deepEqual(solveWires(['black', 'yellow', 'black', 'blue'], bat2), { cut: 3, rule: 3 });
-  assert.deepEqual(solveWires(['black', 'yellow', 'black', 'blue'], bat1), { cut: 4, rule: 4 });
+  assert.deepEqual(solveWires(['red', 'red', 'blue', 'black'], even), { cut: 1, rule: 1 });
+  assert.deepEqual(solveWires(['black', 'yellow', 'black', 'blue'], bat1), { cut: 3, rule: 2 });
+  assert.deepEqual(solveWires(['red', 'yellow', 'yellow', 'red'], even), { cut: 3, rule: 3 });
+  assert.deepEqual(solveWires(['red', 'yellow', 'blue', 'white'], bat2), { cut: 4, rule: 4 });
   assert.deepEqual(solveWires(['black', 'red', 'white', 'red', 'red'], even), { cut: 4, rule: 1 });
   assert.deepEqual(solveWires(['blue', 'yellow', 'blue', 'black', 'blue'], even), { cut: 1, rule: 2 });
   assert.deepEqual(solveWires(['red', 'yellow', 'blue', 'black', 'blue'], odd), { cut: 5, rule: 3 });
@@ -35,7 +35,8 @@ t('wires: hand-checked rules', () => {
   assert.deepEqual(solveWires(['red', 'blue', 'black', 'white', 'red', 'blue'], even), { cut: 3, rule: 1 });
   assert.deepEqual(solveWires(['yellow', 'white', 'red', 'black', 'red', 'blue'], even), { cut: 2, rule: 2 });
   assert.deepEqual(solveWires(['yellow', 'red', 'red', 'black', 'blue', 'blue'], even), { cut: 3, rule: 3 });
-  assert.deepEqual(solveWires(['yellow', 'red', 'white', 'white', 'blue', 'blue'], even), { cut: 6, rule: 4 });
+  assert.deepEqual(solveWires(['yellow', 'red', 'white', 'white', 'blue', 'blue'], even), { cut: 4, rule: 2 });
+  assert.deepEqual(solveWires(['yellow', 'red', 'black', 'black', 'blue', 'blue'], even), { cut: 6, rule: 4 });
 });
 
 t('wires: every rule reachable for every wire count', () => {
@@ -150,6 +151,18 @@ t('1000 random bombs: generation valid and every module solvable by its answer',
   assert.equal(ruleHits.grid.size, 4);
   assert.ok(ruleHits.wires.size >= 15, [...ruleHits.wires].join(' '));
   assert.deepEqual(Object.keys(ruleHits).sort(), Object.keys(MODULE_TYPES).sort());
+});
+
+t('difficulty modes', () => {
+  for (const mode of MODES) {
+    for (let i = 0; i < 50; i++) {
+      const b = generateBomb(mode.id + i, settingsForMode(mode));
+      assert.equal(b.modules.length, mode.count);
+      assert.equal(b.modules.length + b.empties.length + 1, settingsForMode(mode).twoSided ? 12 : 6);
+      assert.equal(b.modules.filter((m) => m.type === 'needy').length, mode.needy ? 1 : 0);
+      for (const m of b.modules) if (m.type !== 'needy') assert.ok(mode.modules.includes(m.type));
+    }
+  }
 });
 
 t('wrong actions give strikes', () => {

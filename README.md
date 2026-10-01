@@ -9,20 +9,20 @@ A two-role cooperative game for a Discrete Mathematics class, inspired by cooper
 | File | What it is |
 |---|---|
 | `index.html` | The game. Built from `src/`; don't edit it by hand. |
-| `manual.html` / `manual.pdf` | Defusal Manual v2.0 (8 pages, printable) |
+| `manual.html` / `manual.pdf` | Defusal Manual v2.1 (11 pages, one module per page, printable) |
 | `src/logic.js` | All rules, bomb generation, seeded RNG (pure JS, no graphics) |
 | `src/modules3d.js`, `src/bomb3d.js`, `src/kit.js`, `src/tex.js` | 3D models and procedural textures (three.js) |
 | `src/main.js`, `src/template.html` | Scene, input, game loop, menus |
 | `test/logic.test.mjs` | Rule tests + 1,000 random bombs solved through the module API |
 
-## Settings (title screen)
-Module grid rows × columns (default **2 × 3**: timer + 5 modules), modules on the back too, timer length, strike limit,
-optional needy module, which module types can appear, and a seed (same seed = same bomb).
+## Modes (title screen)
+Six difficulty modes, from Introduction (3 modules) to Extreme (11 modules, 1 strike). The case is 2 × 3; bigger bombs
+put modules on the back too. Unused bays get blank covers.
 
 ## Modules
 | On the bomb | Math |
 |---|---|
-| Wires | quantifiers over the wires (∀, ∃, ∃!) |
+| Wires | quantifiers over the wires (∀, ∃) |
 | The Button | propositions and connectives; set operations for the release digit |
 | Set Keypad | set operations and cardinality |
 | Simon Maps | functions as sets of ordered pairs |

@@ -26,31 +26,23 @@ button { font-family: var(--sans); }
 
 /* Title */
 #title .card {
-  position: absolute; left: clamp(16px, 4vw, 56px); top: 50%; transform: translateY(-50%);
-  width: min(700px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px 18px;
+  position: absolute; left: clamp(16px, 5vw, 72px); top: 50%; transform: translateY(-50%);
+  width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px 22px 20px;
   box-shadow: 0 30px 80px rgba(0,0,0,.55); backdrop-filter: blur(6px);
 }
-.logo { font-family: var(--mono); font-weight: bold; font-size: 40px; letter-spacing: .08em; line-height: 1; }
+.logo { font-family: var(--mono); font-weight: bold; font-size: 38px; letter-spacing: .08em; line-height: 1; margin-bottom: 18px; }
 .logo span { color: var(--amber); }
-.tag { color: var(--dim); font-size: 14px; margin: 6px 0 14px; }
-.roles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
-.roles div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--dim); line-height: 1.4; }
-.roles b { display: block; color: var(--ink); font-size: 13px; letter-spacing: .08em; margin-bottom: 3px; }
-fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px 10px; margin: 0 0 12px; min-width: 0; }
-legend { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; color: var(--amber); padding: 0 6px; }
-.row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
-.row label { flex: 1; color: var(--ink); }
-select, input[type=text] {
-  background: #0b0e12; color: var(--ink); border: 1px solid #2c343d; border-radius: 7px; padding: 6px 8px;
-  font-family: var(--mono); font-size: 14px;
+#modes { display: grid; gap: 8px; }
+.mode {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; text-align: left; cursor: pointer;
+  background: #0d1116; color: var(--ink); border: 1px solid #2a323b; border-radius: 10px; padding: 11px 14px;
+  transition: border-color .15s, background .15s, transform .1s;
 }
-input[type=text] { width: 110px; text-transform: uppercase; letter-spacing: .12em; }
-.chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }
-.chk input { accent-color: var(--amber); width: 16px; height: 16px; }
-#mods { display: grid; grid-template-columns: 1fr; gap: 7px; padding-top: 4px; }
-#slotInfo { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.mode:hover { border-color: var(--amber); background: #141a21; }
+.mode:active { transform: translateY(1px); }
+.mname { font-weight: bold; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+.mstats { font-family: var(--mono); font-size: 12px; color: var(--dim); }
 .btn {
   appearance: none; border: 0; border-radius: 9px; padding: 12px 18px; font-weight: bold; letter-spacing: .12em;
   cursor: pointer; font-size: 14px; color: #1a1205; background: linear-gradient(#ffc94a, #e09a12);
@@ -58,21 +50,12 @@ input[type=text] { width: 110px; text-transform: uppercase; letter-spacing: .12e
 }
 .btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #8a5a06; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1px solid #39424c; box-shadow: none; }
-.icon { background: #0b0e12; border: 1px solid #2c343d; color: var(--ink); border-radius: 7px; padding: 5px 9px; cursor: pointer; font-size: 15px; }
-#start { width: 100%; font-size: 16px; padding: 14px; margin-top: 4px; }
-.fine { color: #66717c; font-size: 11px; margin-top: 12px; line-height: 1.5; }
 
 /* HUD */
 #hud { position: fixed; left: 0; right: 0; top: 0; display: none; justify-content: space-between; align-items: flex-start; padding: 14px 16px; z-index: 5; pointer-events: none; }
 body.playing #hud { display: flex; }
-#hud .hint { font-family: var(--mono); font-size: 12px; color: rgba(233,237,241,.6); background: rgba(8,10,13,.55); padding: 7px 10px; border-radius: 8px; line-height: 1.6; }
-#hud .hint b { color: var(--ink); }
 #hud .btns { display: flex; gap: 8px; pointer-events: auto; }
 #hud .btns button { background: rgba(10,12,15,.7); color: var(--ink); border: 1px solid #39424c; border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; letter-spacing: .06em; }
-#backBtn { display: none; }
-body.focused #backBtn { display: inline-block; }
-body.focused .ovh { display: none; }
-body:not(.focused) .fch { display: none; }
 
 /* Result */
 #result .card {
@@ -91,14 +74,12 @@ body:not(.focused) .fch { display: none; }
 
 #flash { position: fixed; inset: 0; pointer-events: none; z-index: 20; opacity: 0; }
 #flash.strike { animation: strike .5s ease-out; box-shadow: inset 0 0 160px 40px rgba(255,30,20,.75); }
-#flash.boom { animation: boom 1.6s ease-out forwards; background: #fff; }
+#flash.boom { animation: boom .45s ease-out forwards; background: #fff3d6; }
 @keyframes strike { 0% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes boom { 0% { opacity: 1; } 30% { opacity: .95; background: #ffe7b0; } 100% { opacity: .0; background: #000; } }
+@keyframes boom { 0% { opacity: .9; } 100% { opacity: 0; } }
 
 @media (max-width: 760px) {
-  .cols { grid-template-columns: 1fr; }
   #title .card { top: auto; bottom: 16px; transform: none; max-height: 70vh; }
-  #hud .hint { display: none; }
 }
 </style>
 </head>
@@ -109,43 +90,13 @@ body:not(.focused) .fch { display: none; }
 <div id="title" class="screen">
   <div class="card">
     <div class="logo">LOGIC <span>BOMB</span></div>
-    <div class="tag">A cooperative Discrete Math defusal game. Keep talking. Keep reasoning.</div>
-    <div class="roles">
-      <div><b>DEFUSER</b>Sees this screen. Describes the bomb. Never reads the manual.</div>
-      <div><b>EXPERT</b>Reads the printed manual. Does the math. Never sees the bomb.</div>
-    </div>
-    <div class="cols">
-    <fieldset>
-      <legend>BOMB</legend>
-      <div class="row"><label for="rows">Module grid</label>
-        <select id="rows"><option>1</option><option selected>2</option><option>3</option></select> ×
-        <select id="cols"><option>2</option><option selected>3</option><option>4</option></select>
-      </div>
-      <div class="row"><label for="twoSided">Modules on the back too</label><input type="checkbox" id="twoSided" class="chk"></div>
-      <div class="row"><label for="minutes">Timer</label>
-        <select id="minutes"><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5" selected>5:00</option><option value="6">6:00</option><option value="8">8:00</option><option value="10">10:00</option></select>
-      </div>
-      <div class="row"><label for="strikes">Explodes on strike #</label>
-        <select id="strikes"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
-      </div>
-      <div class="row"><label for="needy">Needy module (Argument Check)</label><input type="checkbox" id="needy"></div>
-      <div class="row"><span id="slotInfo"></span></div>
-    </fieldset>
-    <fieldset>
-      <legend>MODULES THAT CAN APPEAR</legend>
-      <div id="mods"></div>
-    </fieldset>
-    </div>
-    <div class="row" style="margin-bottom:12px"><label for="seed">Bomb seed <span style="color:var(--dim);font-size:12px">(same seed = same bomb)</span></label>
-      <input type="text" id="seed" maxlength="12"><button class="icon" id="dice" title="New random seed">⟳</button></div>
-    <button class="btn" id="start">ARM THE BOMB</button>
-    <div class="fine">Drag to rotate the bomb and read the casing. Click a module to zoom in. Esc or right-click to zoom out. F flips the bomb over.<br>An original classroom game inspired by cooperative bomb-defusal video games. Not affiliated with any commercial game.</div>
+    <div id="modes"></div>
   </div>
 </div>
 
 <div id="hud">
-  <div class="hint"><span class="ovh"><b>Drag</b> rotate · <b>Click</b> a module to zoom · <b>Wheel</b> zoom · <b>F</b> flip</span><span class="fch"><b>Esc</b> / <b>right-click</b> / empty space to zoom out</span></div>
-  <div class="btns"><button id="backBtn">◀ Back</button><button id="flipBtn">Flip ⟲</button><button id="quit">Menu</button></div>
+  <div></div>
+  <div class="btns"><button id="quit">Menu</button></div>
 </div>
 
 <div id="result" class="screen">
@@ -155,8 +106,7 @@ body:not(.focused) .fch { display: none; }
     <div class="stats">
       <div>Time left<b id="resTime">0:00</b></div>
       <div>Strikes<b id="resStrikes">0</b></div>
-      <div>Seed<b id="resSeed">—</b></div>
-      <div>Layout<b id="resLayout">—</b></div>
+      <div style="grid-column: span 2">Mode<b id="resMode">—</b></div>
     </div>
     <div class="resBtns">
       <button class="btn" id="retry">RETRY SAME BOMB</button>
