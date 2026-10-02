@@ -1,4 +1,4 @@
-// LOGIC BOMB v2 — pure game logic (no DOM, no three.js).
+// Keep Proving and Nobody Explodes — pure game logic (no DOM, no three.js).
 // Every rule here must match manual.html. test/logic.test.mjs checks them.
 
 // ───────────────────────── Seeded RNG ─────────────────────────

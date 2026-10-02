@@ -92,7 +92,7 @@ export class TimerView extends ModuleView {
     const lbl = printed(0.3, 0.04, 'STRIKES');
     lbl.position.set(0, 0.315, 0.0015);
     this.group.add(lbl);
-    const brand = printed(0.5, 0.035, 'LOGIC BOMB  ·  MODEL ∀-117', { color: 'rgba(30,34,40,0.75)' });
+    const brand = printed(0.5, 0.035, 'KEEP PROVING  ·  MODEL ∀-117', { color: 'rgba(30,34,40,0.75)' });
     brand.position.set(0, -0.31, 0.0015);
     this.group.add(brand);
   }

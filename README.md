@@ -1,4 +1,6 @@
-# LOGIC BOMB: a Discrete Math defusal game
+# Keep Proving and Nobody Explodes
+
+A Discrete Math defusal game. A classroom parody of *Keep Talking and Nobody Explodes*; not affiliated with its makers.
 
 A two-role cooperative game for a Discrete Mathematics class, inspired by cooperative bomb-defusal video games.
 

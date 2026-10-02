@@ -332,7 +332,7 @@ export function buildCase(settings, edge) {
       }
       const sw = W - 2 * (0.42 + 6 * 0.13) + 0.1;
       if (sw > 0.6) {
-        const st = stencilTexture(['LOGIC BOMB', 'HANDLE WITH LOGIC', '∀x (Bomb(x) → ¬Drop(x))'], 1024, 512, 'stencil');
+        const st = stencilTexture(['KEEP PROVING', 'AND NOBODY EXPLODES', '∀x (Bomb(x) → ¬Drop(x))'], 1024, 512, 'stencil');
         const pl = planeWith(st, sw, sw / 2, { rough: 0.6 });
         pl.position.set(0, 0, DEPTH / 2 + FRAME_T + 0.001);
         face.add(pl);
