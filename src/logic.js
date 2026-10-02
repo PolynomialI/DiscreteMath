@@ -53,11 +53,14 @@ export function genEdgework(rng) {
   serial += String(rng.int(0, 9));
   if (!/[A-Z]/.test(serial)) serial = rng.pick(SERIAL_LETTERS) + serial.slice(1);
 
+  // Every bomb shows every casing item the manual asks about (serial, batteries, indicators),
+  // so "there are none" never looks like "I missed it". Rules can still come out FALSE:
+  // one D holder is a single battery, and indicators can all be unlit.
   const holders = [];
-  const nHolders = rng.int(0, 3);
+  const nHolders = rng.int(1, 3);
   for (let i = 0; i < nHolders; i++) holders.push(rng.chance(0.5) ? 'AA' : 'D');
 
-  const indicators = rng.shuffle(INDICATOR_LABELS).slice(0, rng.int(0, 3)).map((label) => ({ label, lit: rng.chance(0.5) }));
+  const indicators = rng.shuffle(INDICATOR_LABELS).slice(0, rng.int(1, 3)).map((label) => ({ label, lit: rng.chance(0.5) }));
 
   const ports = [];
   const nPlates = rng.int(0, 2);

@@ -5,6 +5,49 @@ import { M, T, mesh, slab, roundedRectShape, holePath, roundedSlab, screw, plane
 import { makeRng } from './logic.js';
 
 export const DEPTH = 1.0;
+
+// Footprint of each casing widget: [length along its long axis, width]. The builders below use these.
+export const EDGE_SIZES = {
+  serial: [0.62, 0.29], AA: [0.52, 0.28], D: [0.5, 0.27], indicator: [0.42, 0.17],
+  port: (n) => [0.16 + n * 0.2, 0.22],
+};
+export function edgeItems(edge) {
+  return [
+    ['serial', ...EDGE_SIZES.serial],
+    ...edge.holders.map((k) => [k, ...EDGE_SIZES[k]]),
+    ...edge.indicators.map(() => ['indicator', ...EDGE_SIZES.indicator]),
+    ...edge.ports.map((p) => ['port', ...EDGE_SIZES.port(p.length)]),
+  ].map(([kind, len, wid]) => ({ kind, len, wid }));
+}
+
+// Packs casing widgets onto the four sides. Top/bottom tracks run along the widget's length;
+// left/right tracks (split by the latch) stack widgets by their width. Pure: tested in node.
+export function packEdgework(items, W, H) {
+  const lrCap = (H - 0.75 - 0.4) / 2;
+  const sides = [
+    { pos: [0, H / 2, 0], rot: [-Math.PI / 2, 0, 0], axis: 'x', tracks: [{ off: 0, len: W - 0.75 }] },
+    { pos: [0, -H / 2, 0], rot: [Math.PI / 2, 0, 0], axis: 'x', tracks: [{ off: 0, len: W - 0.75 }] },
+    { pos: [-W / 2, 0, 0], rot: [0, -Math.PI / 2, 0], axis: 'y', latch: true, tracks: [{ off: lrCap / 2 + 0.2, len: lrCap }, { off: -(lrCap / 2 + 0.2), len: lrCap }] },
+    { pos: [W / 2, 0, 0], rot: [0, Math.PI / 2, 0], axis: 'y', latch: true, tracks: [{ off: lrCap / 2 + 0.2, len: lrCap }, { off: -(lrCap / 2 + 0.2), len: lrCap }] },
+  ];
+  const GAP = 0.08;
+  const tracks = sides.flatMap((sd) => sd.tracks.map((t) => Object.assign(t, { items: [], axis: sd.axis })));
+  const size = (it, t) => (t.axis === 'x' ? it.len : it.wid);
+  const used = (t) => t.items.reduce((n, it) => n + size(it, t) + GAP, 0);
+  const free = (t) => t.len - used(t);
+  let overflow = false;
+  items.forEach((it, i) => {
+    const order = i === 0 ? [tracks[0]] : tracks.slice().sort((a, b) => free(b) - free(a));
+    const tr = order.find((t) => free(t) >= size(it, t));
+    if (!tr) overflow = true;
+    (tr || order[0]).items.push(it);
+  });
+  for (const t of tracks) {
+    let x = t.off - (used(t) - GAP) / 2;
+    for (const it of t.items) { it.at = x + size(it, t) / 2; it.axis = t.axis; x += size(it, t) + GAP; }
+  }
+  return { sides, overflow };
+}
 const FRAME_T = 0.05; // front frame thickness
 export const PLATE_Z = DEPTH / 2 + 0.045; // module plate front face
 
@@ -88,7 +131,7 @@ function battery(kind) {
 function batteryHolder(kind) {
   const g = new THREE.Group();
   const n = kind === 'AA' ? 2 : 1;
-  const w = kind === 'AA' ? 0.52 : 0.5, h = kind === 'AA' ? 0.28 : 0.27;
+  const [w, h] = EDGE_SIZES[kind];
   const tray = mesh(roundedSlab(w, h, 0.04, 0.05, 0.012), M.blackPlastic);
   tray.position.z = 0.05;
   g.add(tray);
@@ -103,8 +146,6 @@ function batteryHolder(kind) {
     clip.position.set(sx * (w / 2 - 0.035), 0, 0.08);
     g.add(clip);
   }
-  g.userData.len = w;
-  g.userData.wid = h;
   return g;
 }
 
@@ -135,8 +176,6 @@ function indicator(label, lit) {
   const plate = planeWith(tex, 0.21, 0.105, { transparent: false, rough: 0.55 });
   plate.position.set(0.075, 0, 0.0305);
   g.add(plate);
-  g.userData.len = 0.42;
-  g.userData.wid = 0.17;
   return g;
 }
 
@@ -165,14 +204,12 @@ function serialPlate(serial) {
   plate.position.z = 0.008;
   plate.rotation.z = 0.015;
   g.add(plate);
-  g.userData.len = 0.62;
-  g.userData.wid = 0.29;
   return g;
 }
 
 function portPlate(ports) {
   const g = new THREE.Group();
-  const w = 0.16 + ports.length * 0.2, h = 0.22;
+  const [w, h] = EDGE_SIZES.port(ports.length);
   const base = mesh(roundedSlab(w, h, 0.025, 0.035, 0.008), M.frame);
   base.position.z = 0.035;
   g.add(base);
@@ -205,8 +242,6 @@ function portPlate(ports) {
   face.position.z = 0.0355;
   g.add(face);
   for (const sx of [-1, 1]) { const sc = screw(0.7); sc.position.set(sx * (w / 2 - 0.035), 0, 0.035); g.add(sc); }
-  g.userData.len = w;
-  g.userData.wid = h;
   return g;
 }
 
@@ -314,45 +349,23 @@ export function buildCase(settings, edge) {
     g.add(face);
   }
 
-  // edgework on the four sides. Widgets are long along their local x.
-  // Top/bottom tracks run along local x; left/right tracks run along local y
-  // (widgets stack vertically there, each one lying across the case depth).
-  const lrCap = (H - 0.75 - 0.4) / 2;
-  const sides = [
-    { pos: [0, H / 2, 0], rot: [-Math.PI / 2, 0, 0], axis: 'x', tracks: [{ off: 0, len: W - 0.75 }] },
-    { pos: [0, -H / 2, 0], rot: [Math.PI / 2, 0, 0], axis: 'x', tracks: [{ off: 0, len: W - 0.75 }] },
-    { pos: [-W / 2, 0, 0], rot: [0, -Math.PI / 2, 0], axis: 'y', latch: true, tracks: [{ off: lrCap / 2 + 0.2, len: lrCap }, { off: -(lrCap / 2 + 0.2), len: lrCap }] },
-    { pos: [W / 2, 0, 0], rot: [0, Math.PI / 2, 0], axis: 'y', latch: true, tracks: [{ off: lrCap / 2 + 0.2, len: lrCap }, { off: -(lrCap / 2 + 0.2), len: lrCap }] },
-  ];
+  // edgework on the four sides
+  const items = edgeItems(edge);
   const widgets = [serialPlate(edge.serial)];
   edge.holders.forEach((k) => widgets.push(batteryHolder(k)));
   edge.indicators.forEach((i) => widgets.push(indicator(i.label, i.lit)));
   edge.ports.forEach((p) => widgets.push(portPlate(p)));
-  const GAP = 0.08;
-  const tracks = sides.flatMap((s) => s.tracks.map((t) => { t.items = []; t.axis = s.axis; return t; }));
-  const size = (w, t) => (t.axis === 'x' ? w.userData.len : w.userData.wid);
-  const used = (t) => t.items.reduce((n, w) => n + size(w, t) + GAP, 0);
-  const free = (t) => t.len - used(t);
-  widgets.forEach((w, i) => {
-    const order = i === 0 ? [tracks[0]] : tracks.slice().sort((a, b) => free(b) - free(a));
-    const tr = order.find((t) => free(t) >= size(w, t)) || order[0];
-    tr.items.push(w);
-  });
-  for (const s of sides) {
+  const { sides } = packEdgework(items, W, H);
+  for (const sd of sides) {
     const sg = new THREE.Group();
-    sg.position.set(...s.pos);
-    sg.rotation.set(...s.rot);
-    for (const t of s.tracks) {
-      const total = used(t) - GAP;
-      let x = t.off - total / 2;
-      for (const w of t.items) {
-        const sz = size(w, t);
-        if (s.axis === 'x') w.position.x = x + sz / 2; else w.position.y = -(x + sz / 2);
-        x += sz + GAP;
-        sg.add(w);
-      }
+    sg.position.set(...sd.pos);
+    sg.rotation.set(...sd.rot);
+    for (const t of sd.tracks) for (const it of t.items) {
+      const w = widgets[items.indexOf(it)];
+      if (sd.axis === 'x') w.position.x = it.at; else w.position.y = -it.at;
+      sg.add(w);
     }
-    if (s.latch) { const l = latch(); l.rotation.z = Math.PI / 2; sg.add(l); }
+    if (sd.latch) { const l = latch(); l.rotation.z = Math.PI / 2; sg.add(l); }
     g.add(sg);
   }
   return { group: g, W, H };

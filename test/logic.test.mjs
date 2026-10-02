@@ -1,9 +1,11 @@
 // Run: node test/logic.test.mjs
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { packEdgework, edgeItems, bombSize } from '../src/bomb3d.js';
 import {
   solveWires, solveButton, keypadOrder, KEYPAD_EXPRS, vennCutSet, solveGrid, truthColumn, parse,
   propositionalValid, ARGUMENTS, WORD_FORMS, generateBomb, createLogic, DEFAULT_SETTINGS, MODULE_TYPES,
-  edgeFacts, formatTime, RELEASE_DIGIT, SIMON_F, SIMON_G, WIRE_COLORS, MODES, settingsForMode,
+  edgeFacts, formatTime, RELEASE_DIGIT, SIMON_F, SIMON_G, WIRE_COLORS, MODES, settingsForMode, KEYPAD_SETS, genEdgework, makeRng,
 } from '../src/logic.js';
 
 let passed = 0;
@@ -176,6 +178,68 @@ t('wrong actions give strikes', () => {
     if (m.type === 'truth') { L.cols = L.solution.map((v) => !v); assert.ok(L.submit().strike); }
     if (m.type === 'venn') { const bad = m.data.wires.findIndex((_, i) => !L.K.has(i + 1)) + 1; assert.ok(L.cutWire(bad).strike); }
   }
+});
+
+t('casing always has everything the manual asks about', () => {
+  const seenB = new Set(), seenLit = new Set(), seenV = new Set(), seenOdd = new Set();
+  for (let i = 0; i < 3000; i++) {
+    const e = genEdgework(makeRng('edge' + i));
+    const f = edgeFacts(e);
+    assert.equal(e.serial.length, 6);
+    assert.ok(f.D.size >= 1, 'serial has a digit (Wires 5, rule 3: ∃d ∈ D)');
+    assert.ok(e.holders.length >= 1 && f.b >= 1, 'at least one battery (Button r)');
+    assert.ok(e.indicators.length >= 1, 'at least one indicator (Button s)');
+    seenB.add(f.b >= 2); seenLit.add(f.lit.size > 0); seenV.add(f.V.size > 0); seenOdd.add([...f.D].some((d) => d % 2));
+  }
+  // every edgework question can still come out both TRUE and FALSE
+  for (const s of [seenB, seenLit, seenV, seenOdd]) assert.equal(s.size, 2);
+});
+
+t('every casing widget fits on the case (nothing hidden or overlapping)', () => {
+  for (const mode of MODES) {
+    const { W, H } = bombSize(settingsForMode(mode));
+    for (let i = 0; i < 1500; i++) {
+      const e = genEdgework(makeRng(mode.id + 'w' + i));
+      const items = edgeItems(e);
+      const { sides, overflow } = packEdgework(items, W, H);
+      assert.ok(!overflow, `widgets overflow for ${JSON.stringify(e)}`);
+      let placed = 0;
+      for (const sd of sides) for (const t of sd.tracks) {
+        placed += t.items.length;
+        for (const it of t.items) {
+          const half = (t.axis === 'x' ? it.len : it.wid) / 2;
+          assert.ok(it.at - half >= t.off - t.len / 2 - 1e-9 && it.at + half <= t.off + t.len / 2 + 1e-9);
+          if (t.axis === 'y') assert.ok(it.len <= 0.8, 'widget fits across the case depth');
+        }
+      }
+      assert.equal(placed, items.length);
+    }
+  }
+});
+
+t('manual matches the game', () => {
+  const html = readFileSync(new URL('../manual.html', import.meta.url), 'utf8').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  // Who's on ∀irst: each sentence sits in the same row as its code word
+  for (const w of WORD_FORMS) assert.ok(text.includes(`${w.english} ${w.word}`), w.word);
+  // Set Keypad definitions
+  for (const [k, v] of Object.entries(KEYPAD_SETS)) assert.ok(text.includes(`${k} = {${v.join(', ')}}`), k);
+  // Simon Maps: both functions, in the right rows
+  const pairs = (m) => Object.entries(m).map(([a, b]) => `(${a[0].toUpperCase() + a.slice(1)}, ${b[0].toUpperCase() + b.slice(1)})`).join(', ');
+  const vowelRow = text.slice(text.indexOf('has a vowel'), text.indexOf('no vowel'));
+  const noVowelRow = text.slice(text.indexOf('no vowel'), text.indexOf('no vowel') + 200);
+  assert.ok(vowelRow.includes(pairs(SIMON_F)) && noVowelRow.includes(pairs(SIMON_G)));
+  // Argument Check: every argument the game can show is listed under the right answer
+  const needy = text.slice(text.indexOf('Valid → Y'));
+  const invalidAt = needy.indexOf('Invalid → N');
+  for (const [prem, concl, valid] of ARGUMENTS) {
+    const row = `${prem.join(', ')} ∴ ${concl}`;
+    const at = needy.indexOf(row);
+    assert.ok(at >= 0, 'argument missing from manual: ' + row);
+    assert.equal(at < invalidAt, valid, 'argument in wrong column: ' + row);
+  }
+  // Button release digits
+  for (const [color, d] of Object.entries(RELEASE_DIGIT)) assert.ok(text.includes(color[0].toUpperCase() + color.slice(1)), color + ' ' + d);
 });
 
 console.log(`\nALL ${passed} LOGIC TESTS PASSED`);
