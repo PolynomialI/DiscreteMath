@@ -7,9 +7,14 @@
   "scripts": {
     "build": "node tools/build.mjs",
     "test": "node test/logic.test.mjs",
-    "pdf": "node tools/pdf.mjs"
+    "pdf": "node tools/pdf.mjs",
+    "build:classic": "node tools/build.mjs classic",
+    "test:classic": "node classic/test/logic.test.mjs",
+    "manual:classic": "node tools/manual-classic.mjs && node tools/pdf.mjs classic"
   },
   "devDependencies": {
+    "@fontsource/courier-prime": "^5.3.0",
+    "@fontsource/special-elite": "^5.3.0",
     "esbuild": "^0.28.2",
     "playwright-core": "^1.63.0",
     "three": "^0.186.1"

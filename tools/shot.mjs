@@ -11,14 +11,14 @@ const page = await browser.newPage({ viewport: { width: +(process.env.VW || 1366
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(m.type() + ': ' + m.text()); });
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-await page.goto('file://' + new URL('../index.html', import.meta.url).pathname);
+await page.goto('file://' + new URL('../' + (process.env.PROJECT ? process.env.PROJECT + '/' : '') + 'index.html', import.meta.url).pathname);
 await page.waitForSelector('#loading.gone', { timeout: 120000 });
 await page.waitForTimeout(1500);
 const shot = async (name) => { await page.screenshot({ path: `${out}/${name}.png` }); console.log('shot', name); };
 
 // opts.mode = index into MODES (0 Introduction … 5 Extreme)
 const startWith = async (opts = {}) => {
-  await page.evaluate((i) => window.__lb.start(i), opts.mode ?? 2);
+  await page.evaluate(([i, s]) => window.__lb.start(i, s), [opts.mode ?? 2, process.env.SEED]);
   await page.waitForTimeout(2500);
 };
 
@@ -51,7 +51,8 @@ if (scenario === 'sides') {
 if (scenario === 'play') {
   // Solves every module through the real input handlers, after one deliberate strike.
   await startWith({ mode: +(process.argv[4] || 3) });
-  const log = await page.evaluate(() => window.__lb.autoplay());
+  // the test makes one deliberate strike, so give it room even on 1-strike modes
+  const log = await page.evaluate(() => { window.__lb.game.maxStrikes = 99; return window.__lb.autoplay(); });
   console.log(log);
   await page.waitForTimeout(3000);
   await shot('play-result');

@@ -5,6 +5,9 @@ A two-role cooperative game for a Discrete Mathematics class, inspired by cooper
 - **Defuser** opens `index.html` (one self-contained file that works offline, including on a Chromebook) and sees a 3D bomb.
 - **Expert** reads `manual.pdf` (source: `manual.html`) and does the math. They never see the screen.
 
+## Classic Edition
+A non-math version of the game (general puzzles, 11 modules + 3 needy) lives in [`classic/`](classic/README.md).
+
 ## Files
 | File | What it is |
 |---|---|

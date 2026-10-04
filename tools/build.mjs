@@ -5,13 +5,17 @@ import { build } from 'esbuild';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const root = new URL('..', import.meta.url).pathname;
-const tmp = root + '.build/';
+const repo = new URL('..', import.meta.url).pathname;
+// optional project folder (e.g. `node tools/build.mjs classic`); defaults to the repo root
+const root = process.argv[2] ? repo + process.argv[2].replace(/\/?$/, '/') : repo;
+const tmp = repo + '.build/';
 mkdirSync(tmp, { recursive: true });
 
 // Every character the game draws (ASCII + math symbols used on modules and screens).
 const GLYPHS = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('') +
-  '¬∧∨→↔∀∃∈∉∪∩−′∅∴★≡≠φ⊆⊂ℤℕ·…’‘“”×—–⟳◀▶✓⚙';
+  '¬∧∨→↔∀∃∈∉∪∩−′∅∴★≡≠φ⊆⊂ℤℕ·…’‘“”×—–⟳◀▶✓⚙▼' +
+  // classic keypad symbols
+  '☾✦Ψ⚓♞¶☂✿ϟ♜Ж⚑Ω✈☯‡♪☘⚙☀✂⚡Я∞☎✉';
 
 const FONT_DIR = '/usr/share/fonts/truetype/dejavu/';
 const fonts = [

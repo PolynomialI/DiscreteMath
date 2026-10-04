@@ -496,7 +496,7 @@ window.__lb = {
   views: () => bomb.views,
   focus: (i) => { i < 0 ? focusOn(bomb.timer) : focusOn(bomb.views[i]); snap(); },
   rotate: (rx, ry) => { setOverview(); pitchT = rx; yawT = ry; snap(); },
-  start: (i) => startGame('TEST' + i, MODES[i]),
+  start: (i, seed) => startGame(seed || 'TEST' + i, MODES[i]),
   // screen pixel at the visual centre of a part (used to test real mouse clicks)
   screenPos(vi, pi) {
     const m = bomb.views[vi].parts[pi];
