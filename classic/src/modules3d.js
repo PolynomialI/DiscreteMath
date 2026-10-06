@@ -320,7 +320,7 @@ export class ButtonView extends ModuleView {
         tween(0.1, (k) => { capGroup.position.z = 0.008 - 0.03 * (1 - k); });
         game.sfx('click');
         this.setStrip(null);
-        this.report(logic.release(wasHold, game.timerText()));
+        this.report(logic.release(wasHold, game.releaseText()));
       },
     }, [capMat]);
   }

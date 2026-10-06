@@ -64,6 +64,14 @@ const game = {
   mode: MODES[0],
   blink: false,
   timerText: () => formatTime(game.timeLeft),
+  // Button release grace: every timer reading within 0.75 real seconds either side of now,
+  // so a release that is a little early or late (human reaction time) still counts.
+  releaseText: () => {
+    const rate = 1 + 0.25 * game.strikes;
+    const seen = [];
+    for (let t = -0.75; t <= 0.75; t += 0.05) seen.push(formatTime(game.timeLeft + t * rate));
+    return seen.join(' ');
+  },
   sfx: (n, v) => sfx(n, v),
   report: (view, res) => report(view, res),
 };
