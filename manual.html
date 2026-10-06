@@ -39,6 +39,22 @@ tr.else td.then { color: var(--ink); }
 .toc td { border: 0; border-bottom: 1px dotted var(--line); padding: 5px 4px; }
 .toc td:last-child { text-align: right; width: 70px; color: var(--mute); }
 .ws td { height: 30px; }
+@font-face { font-family: "Elite"; src: url(classic/fonts/special-elite.woff2) format("woff2"); }
+@font-face { font-family: "Prime"; font-weight: bold; src: url(classic/fonts/courier-prime-bold.woff2) format("woff2"); }
+.cover2 { min-height: 9.6in; text-align: center; padding-top: 0.5in; }
+.cover2 .coverbomb { width: 1.6in; height: 1.6in; }
+.cover2 .covertitle { font: 66pt/1 "Elite", "DejaVu Sans Mono", monospace; margin-top: 10px; }
+.cover2 .coversub { font: bold 15pt "Prime", "DejaVu Sans Mono", monospace; letter-spacing: .35em; margin-top: 8px; color: var(--accent); }
+.cover2 hr { border: 0; border-top: 2px solid var(--ink); width: 75%; margin: 40px auto; }
+.cover2 .covermanual { font: 46pt/1.15 "Elite", "DejaVu Sans Mono", monospace; }
+.cover2 .coverver { font: 22pt "Elite", "DejaVu Sans Mono", monospace; margin-top: 70px; }
+.role { border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+.rolehead { color: #fff; font: bold 15pt "DejaVu Sans Mono", monospace; letter-spacing: .12em; padding: 8px 14px; }
+.role ul { margin: 8px 0; padding-left: 34px; font-size: 12.5pt; }
+.role li { margin: 4px 0; }
+.rulelist { margin: 4px 0; padding-left: 24px; font-size: 12.5pt; }
+.rulelist li { margin: 3px 0; }
+.toc2 td { padding: 3px 4px; }
 .wires { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 18px; }
 .wires td.then { width: 38%; }
 .wires td { padding: 6px 8px; font-size: 11.5pt; }
@@ -46,38 +62,55 @@ tr.else td.then { color: var(--ink); }
 </head>
 <body>
 
-<!-- ─────────── 1. Cover + casing ─────────── -->
+<!-- ─────────── 1. Cover ─────────── -->
 <section class="page">
-  <div class="cover">
-    <div class="big">LOGIC<br><span>BOMB</span></div>
-    <div class="sub">Defusal Manual · v2.1</div>
-    <div class="box">Check numbered rules <b>top to bottom</b>. Use <b>only the first TRUE rule</b>.</div>
-    <h2>The casing (Defuser rotates the bomb to read it)</h2>
-    <table>
-      <tr><th style="width:34%">Item</th><th>Write down</th></tr>
-      <tr><td>Serial number</td><td><span class="m">D</span> = set of its digits · <span class="m">V</span> = set of its vowels</td></tr>
-      <tr><td>Batteries</td><td><span class="m">b</span> = number of batteries</td></tr>
-      <tr><td>Indicators</td><td>Is any indicator <b>lit</b>?</td></tr>
-    </table>
-    <h2>Contents</h2>
-    <table class="toc">
-      <tr><td>1 · Wires</td><td>p. 2</td></tr>
-      <tr><td>2 · The Button</td><td>p. 3</td></tr>
-      <tr><td>3 · Set Keypad</td><td>p. 4</td></tr>
-      <tr><td>4 · Simon Maps</td><td>p. 5</td></tr>
-      <tr><td>5 · Who’s on ∀irst</td><td>p. 6</td></tr>
-      <tr><td>6 · Venn Wires</td><td>p. 7</td></tr>
-      <tr><td>7 · Quantifier Grid</td><td>p. 8</td></tr>
-      <tr><td>8 · Truth Table</td><td>p. 9</td></tr>
-      <tr><td>N · Argument Check (needy)</td><td>p. 10</td></tr>
-      <tr><td>Answer key</td><td>p. 11</td></tr>
-    </table>
+  <div class="cover2">
+    <svg class="coverbomb" viewBox="0 0 120 120" aria-label="Bomb"><circle cx="54" cy="70" r="40" fill="#111"/><rect x="62" y="22" width="18" height="16" transform="rotate(35 71 30)" fill="#111"/><path d="M80 22 C88 10 96 12 100 6" fill="none" stroke="#111" stroke-width="3"/><path d="M100 6 l4 -6 M100 6 l7 -1 M100 6 l2 6 M100 6 l-5 -3" stroke="#c4861a" stroke-width="2.4"/><circle cx="40" cy="56" r="8" fill="#fff" opacity=".85"/></svg>
+    <div class="covertitle">LOGIC BOMB</div>
+    <div class="coversub">DISCRETE MATH EDITION</div>
+    <hr><div class="covermanual">BOMB DEFUSAL<br>MANUAL</div><hr>
+    <div class="coverver">Version 2.1</div>
   </div>
+</section>
+
+<!-- ─────────── 2. How to play ─────────── -->
+<section class="page">
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 2</span></div>
+  <div class="title" style="margin-bottom:10px"><div class="num">!</div><h1>How to Play</h1></div>
+  <div class="two">
+    <div class="role"><div class="rolehead" style="background:#b3261e">DEFUSER</div>
+      <ul><li>Sees the bomb on the computer.</li><li>Describes what is on it.</li><li>Presses buttons and cuts wires.</li><li><b>Never</b> looks at this manual.</li></ul></div>
+    <div class="role"><div class="rolehead" style="background:#c4861a">EXPERT</div>
+      <ul><li>Reads this manual.</li><li>Does the math.</li><li>Tells the Defuser what to do.</li><li><b>Never</b> looks at the screen.</li></ul></div>
+  </div>
+  <h2>The rules</h2>
+  <ol class="rulelist">
+    <li><b>No peeking.</b> The Defuser and the Expert can't see each other's side. Talking is the only way to win.</li>
+    <li><b>Beat the clock.</b> Disarm every module before the timer hits 0:00.</li>
+    <li><b>Watch your strikes.</b> Every mistake is a strike and makes the timer faster. Too many strikes and the bomb explodes.</li>
+    <li><b>Any order.</b> Do the modules in any order. A module is done when its light turns <b>green</b>.</li>
+    <li><b>First true rule wins.</b> When a module lists rules, check them top to bottom and use only the first one that is true.</li>
+  </ol>
+  <h2>Reading the casing (turn the bomb to see its sides)</h2>
+  <table>
+    <tr><th style="width:34%">On the casing</th><th>Write down</th></tr>
+    <tr><td>Serial number</td><td><span class="m">D</span> = set of its digits · <span class="m">V</span> = set of its vowels</td></tr>
+    <tr><td>Batteries</td><td><span class="m">b</span> = number of batteries</td></tr>
+    <tr><td>Indicators</td><td>Is any indicator <b>lit</b>?</td></tr>
+  </table>
+  <h2>Contents</h2>
+  <table class="toc toc2">
+    <tr><td>1 · Wires</td><td>p. 3</td><td>5 · Who’s on ∀irst</td><td>p. 7</td></tr>
+    <tr><td>2 · The Button</td><td>p. 4</td><td>6 · Venn Wires</td><td>p. 8</td></tr>
+    <tr><td>3 · Set Keypad</td><td>p. 5</td><td>7 · Quantifier Grid</td><td>p. 9</td></tr>
+    <tr><td>4 · Simon Maps</td><td>p. 6</td><td>8 · Truth Table</td><td>p. 10</td></tr>
+    <tr><td>N · Argument Check</td><td>p. 11</td><td>Answer key</td><td>p. 12</td></tr>
+  </table>
 </section>
 
 <!-- ─────────── 2. Wires ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 2</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 3</span></div>
   <div class="title"><div class="num">1</div><h1>Wires</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -120,7 +153,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 3. Button ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 3</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 4</span></div>
   <div class="title"><div class="num">2</div><h1>The Button</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -165,7 +198,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 4. Keypad ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 4</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 5</span></div>
   <div class="title"><div class="num">3</div><h1>Set Keypad</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -196,7 +229,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 5. Simon ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 5</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 6</span></div>
   <div class="title"><div class="num">4</div><h1>Simon Maps</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -218,7 +251,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 6. Who's on First ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 6</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 7</span></div>
   <div class="title"><div class="num">5</div><h1>Who’s on ∀irst</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -247,7 +280,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 7. Venn Wires ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 7</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 8</span></div>
   <div class="title"><div class="num">6</div><h1>Venn Wires</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -286,7 +319,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 8. Grid ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 8</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 9</span></div>
   <div class="title"><div class="num">7</div><h1>Quantifier Grid</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -312,7 +345,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 9. Truth table ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 9</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 10</span></div>
   <div class="title"><div class="num">8</div><h1>Truth Table</h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -339,7 +372,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 10. Needy ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 10</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 11</span></div>
   <div class="title"><div class="num">N</div><h1>Argument Check <span style="font-size:13pt;color:var(--mute)">(needy)</span></h1></div>
   <div class="top">
     <svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="14" fill="#d8dce0" stroke="#555" stroke-width="3"/>
@@ -382,7 +415,7 @@ tr.else td.then { color: var(--ink); }
 
 <!-- ─────────── 11. Answer key ─────────── -->
 <section class="page">
-  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 11</span></div>
+  <div class="hdr"><span>LOGIC BOMB v2.1</span><span>page 12</span></div>
   <div class="title"><div class="num">✓</div><h1>Answer Key</h1></div>
   <p style="margin:0 0 10px">Casing for every example: serial <span class="m">KA4T74</span> (<span class="m">D = {4, 7}</span>, <span class="m">V = {A}</span>), 2 batteries, NEG lit.</p>
   <table style="font-size:11pt">

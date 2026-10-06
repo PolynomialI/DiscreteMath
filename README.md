@@ -12,7 +12,7 @@ A non-math version of the game (general puzzles, 11 modules + 3 needy) lives in 
 | File | What it is |
 |---|---|
 | `index.html` | The game. Built from `src/`; don't edit it by hand. |
-| `manual.html` / `manual.pdf` | Defusal Manual v2.1 (11 pages, one module per page, printable) |
+| `manual.html` / `manual.pdf` | Defusal Manual v2.1 (12 pages: cover, how to play, one module per page, answer key) |
 | `src/logic.js` | All rules, bomb generation, seeded RNG (pure JS, no graphics) |
 | `src/modules3d.js`, `src/bomb3d.js`, `src/kit.js`, `src/tex.js` | 3D models and procedural textures (three.js) |
 | `src/main.js`, `src/template.html` | Scene, input, game loop, menus |
