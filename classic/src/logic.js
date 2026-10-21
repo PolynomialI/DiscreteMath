@@ -653,7 +653,7 @@ export const MODES = [
   { id: 'moderate', name: 'Moderate', count: 5, needy: 0, strikes: 3, minutes: 4, modules: ALL },
   { id: 'needy', name: 'Needy', count: 5, needy: 2, strikes: 3, minutes: 5, modules: ALL },
   { id: 'challenging', name: 'Challenging', count: 8, needy: 1, strikes: 2, minutes: 6, modules: ALL },
-  { id: 'extreme', name: 'Extreme', count: 11, needy: 2, strikes: 1, minutes: 6, modules: ALL },
+  { id: 'extreme', name: 'Extreme', count: 11, needy: 2, strikes: 1, minutes: 7, modules: ALL },
 ];
 
 export function settingsForMode(mode) {
